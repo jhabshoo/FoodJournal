@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">FoodJournal</string>
+
+    <string name="journal_str">Journal</string>
+    <string name="calculator_str">Macro Calculator</string>
+    <string name="dummy_section_text">Section %1d is just a dummy section.</string>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="title_activity_journal">JournalActivity</string>
+
+</resources>

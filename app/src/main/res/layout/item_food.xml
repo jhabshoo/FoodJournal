@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent" >
+    <TextView
+        android:id="@+id/foodName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Name"
+        android:layout_marginLeft="17dp"
+        android:layout_marginStart="17dp"
+        android:layout_alignTop="@+id/button"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="14dp"/>
+    <TextView
+        android:id="@+id/foodCalories"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Calories"
+        android:layout_marginRight="82dp"
+        android:layout_marginEnd="82dp"
+        android:layout_alignBaseline="@+id/foodName"
+        android:layout_alignBottom="@+id/foodName"
+        android:layout_toLeftOf="@+id/foodItemDeleteButton"
+        android:layout_toStartOf="@+id/foodItemDeleteButton"/>
+
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/foodItemDeleteButton"
+        android:src="@android:drawable/ic_menu_delete"
+        android:layout_marginRight="46dp"
+        android:layout_marginEnd="46dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="18dp"/>
+</RelativeLayout>
