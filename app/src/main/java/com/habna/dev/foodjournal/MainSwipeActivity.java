@@ -31,6 +31,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -376,13 +377,23 @@ public class MainSwipeActivity extends AppCompatActivity {
     private void saveGoals()  {
       SharedPreferences preferences = getActivity().getSharedPreferences("goals", 0);
       SharedPreferences.Editor editor = preferences.edit();
-      editor.putString("calories", String.valueOf(goalCalories));
+      String val;
+      if (goalCalories == null) {
+        val = String.valueOf(0.0);
+      }else {
+        val = String.valueOf(goalCalories);
+      }
+      editor.putString("calories", val);
       editor.apply();
     }
 
     private void loadGoals()  {
       SharedPreferences preferences = getActivity().getSharedPreferences("goals", 0);
-      goalCalories = Double.valueOf(preferences.getString("calories", "-1"));
+      try {
+        goalCalories = Double.valueOf(preferences.getString("calories", "-1"));
+      } catch (NumberFormatException nfe) {
+        goalCalories = 0.0;
+      }
     }
 
     private void loadCurrentFoods(ArrayAdapter<String> adapter) {
@@ -492,13 +503,110 @@ public class MainSwipeActivity extends AppCompatActivity {
   }
 
   public static class CalculatorFragment extends Fragment {
+
+    private Double goalCalories;
+    private TextView goalText;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
       super.onCreateView(inflater, container, savedInstanceState);
-      View rootView = inflater.inflate(R.layout.fragment_calculator, container, false);
+      Context context = getActivity();
+      View view = inflater.inflate(R.layout.fragment_calculator, container, false);
 
-      return rootView;
+      goalText = (TextView) view.findViewById(R.id.goalTextView);
+
+      final EditText heightText = (EditText) view.findViewById(R.id.heightText);
+      final EditText weightText = (EditText) view.findViewById(R.id.weightText);
+      final EditText bodyFatText = (EditText) view.findViewById(R.id.bodyFatText);
+      final EditText ageText = (EditText) view.findViewById(R.id.ageTextView);
+      final Spinner sexSpinner = (Spinner) view.findViewById(R.id.sexSpinner);
+      final Spinner activeSpinner = (Spinner) view.findViewById(R.id.activitySpinner);
+      final Spinner goalSpinner = (Spinner) view.findViewById(R.id.goalSpinner);
+
+      final ArrayAdapter<CharSequence> sexAdapter = ArrayAdapter.createFromResource(context, R.array.sexes,
+        android.R.layout.simple_spinner_dropdown_item);
+      final ArrayAdapter<CharSequence> activeAdapter = ArrayAdapter.createFromResource(context, R.array.activities,
+        android.R.layout.simple_spinner_item);
+      final ArrayAdapter<CharSequence> goalAdapter = ArrayAdapter.createFromResource(context, R.array.goals,
+        android.R.layout.simple_spinner_item);
+
+      sexSpinner.setAdapter(sexAdapter);
+      activeSpinner.setAdapter(activeAdapter);
+      goalSpinner.setAdapter(goalAdapter);
+
+      Button submitButton = (Button) view.findViewById(R.id.submitButton);
+      submitButton.setOnClickListener(new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+          String height = heightText.getText().toString();
+          String weight = weightText.getText().toString();
+          String bodyFat = bodyFatText.getText().toString();
+          String sex = sexAdapter.getItem(sexSpinner.getSelectedItemPosition()).toString();
+          String active = activeAdapter.getItem(activeSpinner.getSelectedItemPosition()).toString();
+          String goal = goalAdapter.getItem(goalSpinner.getSelectedItemPosition()).toString();
+          String age = ageText.getText().toString();
+          try {
+            double h = Double.valueOf(height);
+            double w = Double.valueOf(weight);
+            double bf = bodyFat.isEmpty() ? -1 : Double.valueOf(bodyFat);
+            boolean male = sex.toUpperCase().equals("DUDE") ? true : false;
+            Calculator.ACTIVE_TYPE act = Calculator.getActiveByString(active);
+            Calculator.GOAL_TYPE g = Calculator.getGoalByString(goal);
+            int a = Integer.valueOf(age);
+            Calculator calculator = new Calculator(h, w, a, bf, male, g, act);
+            goalCalories = calculator.getGoalCals();
+            goalText.setText("Goal: " + goalCalories + " calories per day");
+          }catch (NumberFormatException nfe)  {
+
+          }
+        }
+      });
+
+
+
+      return view;
     }
+
+    private void loadGoalsText() {
+      goalText.setText("Daily Calories To Maintain: " + goalCalories);
+    }
+
+    @Override
+    public void onStop() {
+      super.onStop();
+      saveGoals();
+    }
+
+    @Override
+    public void onStart() {
+      super.onStart();
+      loadGoals();
+    }
+
+    private void saveGoals() {
+      SharedPreferences preferences = getActivity().getSharedPreferences("goals", 0);
+      SharedPreferences.Editor editor = preferences.edit();
+      String val;
+      if (goalText.getText().toString().isEmpty()) {
+        val = String.valueOf(0.0);
+      }else {
+        val = String.valueOf(goalText.getText().toString());
+      }
+      editor.putString("calories", val);
+      editor.apply();
+    }
+
+    private void loadGoals()  {
+      SharedPreferences preferences = getActivity().getSharedPreferences("goals", 0);
+      String str = preferences.getString("calories", "n/a");
+      try {
+        goalCalories = Double.valueOf(str);
+      } catch (NumberFormatException nfe) {
+        goalCalories = 0.0;
+      }
+      loadGoalsText();
+    }
+
+
   }
 }

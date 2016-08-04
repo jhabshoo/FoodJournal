@@ -37,6 +37,38 @@ public class Calculator {
     this.activity = activity;
   }
 
+  public static GOAL_TYPE getGoalByString(String str) {
+    if ("LOSE".equals(str.toUpperCase())) {
+      return GOAL_TYPE.LOSE;
+    }
+    if ("MAINTAIN".equals(str.toUpperCase())) {
+      return GOAL_TYPE.MAINTAIN;
+    }
+    if ("GAIN".equals(str.toUpperCase())) {
+      return GOAL_TYPE.GAIN;
+    }
+    return null;
+  }
+
+  public static ACTIVE_TYPE getActiveByString(String str) {
+    if ("SEDENTARY".equals(str.toUpperCase())) {
+      return ACTIVE_TYPE.SEDENTARY;
+    }
+    if ("LIGHTLY".equals(str.toUpperCase())) {
+      return ACTIVE_TYPE.LIGHTLY;
+    }
+    if ("MODERATELY".equals(str.toUpperCase())) {
+      return ACTIVE_TYPE.MODERATELY;
+    }
+    if ("VERY".equals(str.toUpperCase())) {
+      return ACTIVE_TYPE.VERY;
+    }
+    if ("EXTREMELY".equals(str.toUpperCase())) {
+      return ACTIVE_TYPE.EXTREMELY;
+    }
+    return null;
+  }
+
   public double getGoalCals()  {
     double cals = getActiveMultiplier() * calculateBMR();
     return cals;
