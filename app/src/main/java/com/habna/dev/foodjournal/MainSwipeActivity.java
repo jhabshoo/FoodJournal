@@ -519,6 +519,7 @@ public class MainSwipeActivity extends AppCompatActivity {
       final EditText weightText = (EditText) view.findViewById(R.id.weightText);
       final EditText bodyFatText = (EditText) view.findViewById(R.id.bodyFatText);
       final EditText ageText = (EditText) view.findViewById(R.id.ageTextView);
+      final EditText weekLossText = (EditText) view.findViewById(R.id.weekLossText);
       final Spinner sexSpinner = (Spinner) view.findViewById(R.id.sexSpinner);
       final Spinner activeSpinner = (Spinner) view.findViewById(R.id.activitySpinner);
       final Spinner goalSpinner = (Spinner) view.findViewById(R.id.goalSpinner);
@@ -533,6 +534,22 @@ public class MainSwipeActivity extends AppCompatActivity {
       sexSpinner.setAdapter(sexAdapter);
       activeSpinner.setAdapter(activeAdapter);
       goalSpinner.setAdapter(goalAdapter);
+      goalSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        @Override
+        public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+          String key = goalAdapter.getItem(goalSpinner.getSelectedItemPosition()).toString().toUpperCase();
+          if (key.equals("MAINTAIN")) {
+            weekLossText.setVisibility(View.INVISIBLE);
+          }else {
+            weekLossText.setVisibility(View.VISIBLE);
+          }
+        }
+
+        @Override
+        public void onNothingSelected(AdapterView<?> adapterView) {
+
+        }
+      });
 
       Button submitButton = (Button) view.findViewById(R.id.submitButton);
       submitButton.setOnClickListener(new View.OnClickListener() {
@@ -545,6 +562,7 @@ public class MainSwipeActivity extends AppCompatActivity {
           String active = activeAdapter.getItem(activeSpinner.getSelectedItemPosition()).toString();
           String goal = goalAdapter.getItem(goalSpinner.getSelectedItemPosition()).toString();
           String age = ageText.getText().toString();
+          String weekLoss = weekLossText.getText().toString();
           try {
             double h = Double.valueOf(height);
             double w = Double.valueOf(weight);
@@ -553,9 +571,17 @@ public class MainSwipeActivity extends AppCompatActivity {
             Calculator.ACTIVE_TYPE act = Calculator.getActiveByString(active);
             Calculator.GOAL_TYPE g = Calculator.getGoalByString(goal);
             int a = Integer.valueOf(age);
-            Calculator calculator = new Calculator(h, w, a, bf, male, g, act);
+            double wl = weekLoss.isEmpty() ? Double.valueOf(0.0) : Double.valueOf(weekLoss);
+            Calculator calculator = new Calculator(h, w, a, bf, male, g, act, wl);
             goalCalories = calculator.getGoalCals();
-            goalText.setText("Goal: " + goalCalories + " calories per day");
+            double limit = male ? Calculator.MALE_FLOOR : Calculator.FEMALE_FLOOR;
+            if (goalCalories < limit)  {
+              goalText.setText("Goal exceeds your minimal caloric intake.");
+              goalText.setTextColor(Color.RED);
+            } else {
+              goalText.setText("Goal: " + goalCalories + " calories per day");
+              goalText.setTextColor(Color.BLACK);
+            }
           }catch (NumberFormatException nfe)  {
 
           }

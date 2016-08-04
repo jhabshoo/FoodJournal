@@ -90,4 +90,16 @@
         android:layout_below="@+id/bodyFatText"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"/>
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="numberDecimal"
+        android:ems="10"
+        android:id="@+id/weekLossText"
+        android:hint="Lbs per week"
+        android:visibility="invisible"
+        android:layout_below="@+id/goalSpinner"
+        android:layout_toRightOf="@+id/goalTextView"
+        />
 </RelativeLayout>

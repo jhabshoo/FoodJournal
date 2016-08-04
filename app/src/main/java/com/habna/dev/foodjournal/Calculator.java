@@ -19,15 +19,19 @@ public class Calculator {
     EXTREMELY
   }
 
+  public static final double MALE_FLOOR = 1800;
+  public static final double FEMALE_FLOOR = 1200;
+
   private double height;
   private double weight;
   private int age;
   private double bodyFat;
   private boolean male;
   private GOAL_TYPE goal;
+  private double weeklyLbs;
   private ACTIVE_TYPE activity;
 
-  public Calculator(double height, double weight, int age, double bodyFat, boolean male, GOAL_TYPE goal, ACTIVE_TYPE activity) {
+  public Calculator(double height, double weight, int age, double bodyFat, boolean male, GOAL_TYPE goal, ACTIVE_TYPE activity, double weeklyLbs) {
     this.height = height;
     this.weight = weight;
     this.age = age;
@@ -35,6 +39,7 @@ public class Calculator {
     this.male = male;
     this.goal = goal;
     this.activity = activity;
+    this.weeklyLbs = weeklyLbs;
   }
 
   public static GOAL_TYPE getGoalByString(String str) {
@@ -54,10 +59,10 @@ public class Calculator {
     if ("SEDENTARY".equals(str.toUpperCase())) {
       return ACTIVE_TYPE.SEDENTARY;
     }
-    if ("LIGHTLY".equals(str.toUpperCase())) {
+    if ("LIGHT".equals(str.toUpperCase())) {
       return ACTIVE_TYPE.LIGHTLY;
     }
-    if ("MODERATELY".equals(str.toUpperCase())) {
+    if ("MODERATE".equals(str.toUpperCase())) {
       return ACTIVE_TYPE.MODERATELY;
     }
     if ("VERY".equals(str.toUpperCase())) {
@@ -71,6 +76,7 @@ public class Calculator {
 
   public double getGoalCals()  {
     double cals = getActiveMultiplier() * calculateBMR();
+    cals = adjustForWeightLoss(cals);
     return cals;
   }
 
@@ -97,6 +103,16 @@ public class Calculator {
         break;
     }
     return mult;
+  }
+
+  private double adjustForWeightLoss(double cals) {
+    double adjustment = (goal.equals(GOAL_TYPE.MAINTAIN) ? 1 : getAdjustment());
+    return cals + adjustment;
+  }
+
+  private double getAdjustment() {
+    double mult = goal.equals(GOAL_TYPE.GAIN) ? 1 : -1;
+    return weeklyLbs * 500 * mult;
   }
 
   private double calculateBMR() {
