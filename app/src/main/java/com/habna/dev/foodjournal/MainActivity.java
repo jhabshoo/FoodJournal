@@ -26,6 +26,15 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
       }
     });
+
+    final Button calculatorButton = (Button) findViewById(R.id.calculatorButton);
+    calculatorButton.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View view) {
+        Intent intent = new Intent(MainActivity.this, MainSwipeActivity.class);
+        startActivity(intent);
+      }
+    });
   }
 
 }

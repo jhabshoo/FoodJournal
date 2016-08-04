@@ -1,5 +1,6 @@
 package com.habna.dev.foodjournal;
 
+import android.app.Activity;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -46,6 +47,7 @@ public class FoodAdapter extends ArrayAdapter<Food> {
         activity.calculateTotalCalories();
         activity.finish();
         activity.startActivity(activity.getIntent());
+
       }
     });
 

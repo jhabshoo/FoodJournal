@@ -6,5 +6,8 @@
     <string name="dummy_section_text">Section %1d is just a dummy section.</string>
     <string name="title_activity_main">MainActivity</string>
     <string name="title_activity_journal">JournalActivity</string>
+    <string name="title_activity_main_swipe">FoodJournal</string>
+    <string name="action_settings">Settings</string>
+    <string name="section_format">Hello World from section: %1$d</string>
 
 </resources>

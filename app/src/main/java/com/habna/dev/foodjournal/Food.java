@@ -53,4 +53,8 @@ public class Food {
     return "Food [name=" + name + ",protein=" + protein + ",carbs=" + carbs + ",fat=" + fat + "]";
   }
 
+  public String displayString() {
+    return name;
+  }
+
 }
