@@ -54,7 +54,21 @@ public class Food {
   }
 
   public String displayString() {
-    return name;
+    return name + ", Cal: " + calories;
+  }
+
+  public String getProteinDisplay() {
+    return protein + " g Protein";
+  }
+
+  public String getCarbsDisplay() {
+    return carbs + " g Carbs";
+  }
+  public String getFatDisplay() {
+    return fat + " g Fat";
+  }
+  public String getCalsDisplay() {
+    return calories + " Calories";
   }
 
 }

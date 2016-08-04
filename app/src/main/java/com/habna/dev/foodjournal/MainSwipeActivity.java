@@ -3,7 +3,7 @@ package com.habna.dev.foodjournal;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -31,12 +31,12 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.w3c.dom.Text;
-
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class MainSwipeActivity extends AppCompatActivity {
 
@@ -150,15 +150,50 @@ public class MainSwipeActivity extends AppCompatActivity {
       final ListView currentFoodsListView = (ListView) view.findViewById(R.id.currentFoodsListView);
       final ArrayAdapter<String> currentFoodsListAdapter = new ArrayAdapter<>(getActivity(),
         android.R.layout.simple_dropdown_item_1line, getCurrentFoodStrings());
+      loadCurrentFoods(currentFoodsListAdapter);
       currentFoodsListView.setAdapter(currentFoodsListAdapter);
       currentFoodsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-          currentFoodsListAdapter.remove(currentFoodsListAdapter.getItem(i));
-          recalculateTotalCalories(totalCaloriesTextView, currentFoodsListAdapter);
+          final int position = i;
+          String key = getName(currentFoodsListAdapter, position).toUpperCase();
+          Food food = allFoods.get(key);
+          if (food != null) {
+            Context context = getActivity();
+            TextView protein = new TextView(context);
+            protein.setText(food.getProteinDisplay());
+            TextView carbs = new TextView(context);
+            carbs.setText(food.getCarbsDisplay());
+            TextView fat = new TextView(context);
+            fat.setText(food.getFatDisplay());
+            TextView calories = new TextView(context);
+            calories.setText(food.getCalsDisplay());
+
+            LinearLayout layout = new LinearLayout(context);
+            layout.setOrientation(LinearLayout.VERTICAL);
+            layout.addView(protein);
+            layout.addView(carbs);
+            layout.addView(fat);
+            layout.addView(calories);
+
+            final AlertDialog.Builder builder = new AlertDialog.Builder(context);
+            builder.setTitle(food.getName());
+            builder.setView(layout);
+            builder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+              @Override
+              public void onClick(DialogInterface dialogInterface, int i) {}
+            });
+            builder.setNegativeButton("Remove", new DialogInterface.OnClickListener() {
+              @Override
+              public void onClick(DialogInterface dialogInterface, int i) {
+                currentFoodsListAdapter.remove(currentFoodsListAdapter.getItem(position));
+                recalculateTotalCalories(totalCaloriesTextView, currentFoodsListAdapter);
+              }
+            });
+            builder.show();
+          }
         }
       });
-
       final AutoCompleteTextView searchTextView = (AutoCompleteTextView) (view.findViewById(R.id.searchTextView));
       searchTextView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
         @Override
@@ -222,7 +257,7 @@ public class MainSwipeActivity extends AppCompatActivity {
                 searchAdapter.add(nameText.toUpperCase());
                 addToAllFoods(new Food(nameText, Double.valueOf(proteinText),
                   Double.valueOf(carbsText), Double.valueOf(fatText)));
-                Toast.makeText(getActivity(), "Added " + nameText, Toast.LENGTH_LONG).show();
+                Toast.makeText(getActivity(), "Added " + nameText, Toast.LENGTH_SHORT).show();
               }
             }
           });
@@ -236,6 +271,25 @@ public class MainSwipeActivity extends AppCompatActivity {
         }
       });
       return view;
+    }
+
+    private void loadCurrentFoods(ArrayAdapter<String> adapter) {
+      SharedPreferences preferences = getActivity().getSharedPreferences("current_foods", 0);
+      Set<String> strings = preferences.getStringSet("current_food_strings", null);
+      if (strings != null)  {
+        adapter.addAll(strings);
+      }
+    }
+
+    private void saveCurrentFoods(ArrayAdapter<String> adapter) {
+      SharedPreferences preferences = getActivity().getSharedPreferences("current_foods", 0);
+      SharedPreferences.Editor editor = preferences.edit();
+      Set<String> set = new HashSet<>();
+      for (int i = 0; i < adapter.getCount(); i++)  {
+        set.add(adapter.getItem(i));
+      }
+      editor.putStringSet("current_food_strings", set);
+      editor.apply();
     }
 
     private void recalculateTotalCalories(TextView caloriesText, ArrayAdapter<String> currentFoodsListAdapter) {
@@ -300,11 +354,16 @@ public class MainSwipeActivity extends AppCompatActivity {
     private double getTotalCalories(ArrayAdapter<String> adapter) {
       double total = 0;
       for (int i = 0; i < adapter.getCount(); i++)  {
-        Food f = allFoods.get(adapter.getItem(i).toUpperCase());
+        Food f = allFoods.get(getName(adapter, i).toUpperCase());
         total += f.getCalories();
       }
       return total;
     }
+  }
+
+  private static String getName(ArrayAdapter<String> adapter, int pos) {
+    String item = adapter.getItem(pos);
+    return item.substring(0, item.indexOf(","));
   }
 
   public static class CalculatorFragment extends Fragment {
