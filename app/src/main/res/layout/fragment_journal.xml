@@ -8,7 +8,7 @@
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
                   android:orientation="vertical"
                   android:layout_width="205dp"
-                  android:layout_height="329dp"
+                  android:layout_height="match_parent"
                   android:layout_weight="0.89">
 
         <AutoCompleteTextView
@@ -21,35 +21,56 @@
 
         <ListView
             android:id="@+id/currentFoodsListView"
-            android:layout_width="202dp"
-            android:layout_height="415dp"/>
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
 
     </LinearLayout>
     <RelativeLayout
         android:layout_width="113dp"
-        android:layout_height="415dp">
+        android:layout_height="match_parent">
 
         <Button
             android:layout_width="106dp"
             android:layout_height="wrap_content"
             android:text="Add custom food"
             android:id="@+id/addCustomFoodButton"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
-            android:layout_marginTop="40dp"/>
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginBottom="64dp"/>
 
         <TextView
             android:layout_width="67dp"
             android:layout_height="wrap_content"
             android:id="@+id/totalCaloriesTextView"
             android:layout_gravity="bottom"
-            android:layout_alignParentBottom="true"
+            android:layout_marginTop="43dp"
+            android:layout_alignParentTop="true"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
-            android:layout_marginBottom="88dp"
-            android:layout_alignRight="@+id/addCustomFoodButton"
-            android:layout_alignEnd="@+id/addCustomFoodButton"/>
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"/>
+
+
+        <TextView
+            android:layout_width="67dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/goalCaloriesTextView"
+            android:layout_gravity="bottom"
+            android:layout_below="@+id/totalCaloriesTextView"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"/>
+
+        <Button
+            android:layout_width="106dp"
+            android:layout_height="wrap_content"
+            android:text="Set Goal"
+            android:id="@+id/goalButton"
+            android:layout_above="@+id/addCustomFoodButton"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"/>
     </RelativeLayout>
 
 </LinearLayout>

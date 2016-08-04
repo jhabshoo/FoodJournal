@@ -4,6 +4,8 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -27,10 +29,18 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import org.w3c.dom.Text;
+
+import java.lang.reflect.Array;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -95,7 +105,6 @@ public class MainSwipeActivity extends AppCompatActivity {
     return super.onOptionsItemSelected(item);
   }
 
-
   /**
    * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
    * one of the sections/tabs/pages.
@@ -137,6 +146,10 @@ public class MainSwipeActivity extends AppCompatActivity {
   public static class JournalFragment extends Fragment  {
 
     private static Map<String, Food> allFoods;
+    private ListView currentFoodsListView;
+    private Double goalCalories;
+    private ArrayAdapter<String> currentFoodsListAdapter;
+    private TextView goalCaloriesTextView;
 
     @Nullable
     @Override
@@ -144,13 +157,19 @@ public class MainSwipeActivity extends AppCompatActivity {
                              @Nullable Bundle savedInstanceState) {
       super.onCreateView(inflater, container, savedInstanceState);
       final View view = inflater.inflate(R.layout.fragment_journal, container, false);
+      currentFoodsListAdapter = new ArrayAdapter<>(getActivity(),
+        android.R.layout.simple_dropdown_item_1line, getCurrentFoodStrings());
+
+      goalCaloriesTextView = (TextView) view.findViewById(R.id.goalCaloriesTextView);
 
       final TextView totalCaloriesTextView = (TextView) view.findViewById(R.id.totalCaloriesTextView);
+      loadGoals();
+      recalculateTotalCalories(totalCaloriesTextView, currentFoodsListAdapter);
+      setGoal(goalCaloriesTextView);
 
-      final ListView currentFoodsListView = (ListView) view.findViewById(R.id.currentFoodsListView);
-      final ArrayAdapter<String> currentFoodsListAdapter = new ArrayAdapter<>(getActivity(),
-        android.R.layout.simple_dropdown_item_1line, getCurrentFoodStrings());
+      currentFoodsListView = (ListView) view.findViewById(R.id.currentFoodsListView);
       loadCurrentFoods(currentFoodsListAdapter);
+      loadAllFoods();
       currentFoodsListView.setAdapter(currentFoodsListAdapter);
       currentFoodsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
         @Override
@@ -194,6 +213,7 @@ public class MainSwipeActivity extends AppCompatActivity {
           }
         }
       });
+
       final AutoCompleteTextView searchTextView = (AutoCompleteTextView) (view.findViewById(R.id.searchTextView));
       searchTextView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
         @Override
@@ -215,6 +235,32 @@ public class MainSwipeActivity extends AppCompatActivity {
       final ArrayAdapter<String> searchAdapter = new ArrayAdapter(getActivity(),
         android.R.layout.simple_dropdown_item_1line, getAllFoodsKeys());
       searchTextView.setAdapter(searchAdapter);
+
+      Button goalButton = (Button) view.findViewById(R.id.goalButton);
+      goalButton.setOnClickListener(new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+          Context context = getActivity();
+          final EditText goal = new EditText(context);
+          goal.setHint("Daily goal calories");
+          goal.setInputType(InputType.TYPE_NUMBER_FLAG_DECIMAL);
+
+          final AlertDialog.Builder builder = new AlertDialog.Builder(context);
+          builder.setTitle("Edit Daily Goal");
+          builder.setView(goal);
+          builder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+              try {
+                goalCalories = Double.valueOf(goal.getText().toString());
+                setGoal(goalCaloriesTextView);
+              } catch (NumberFormatException nfe) {
+              }
+            }
+          });
+          builder.show();
+        }
+      });
 
       Button addCustomFoodButton = (Button) view.findViewById(R.id.addCustomFoodButton);
       addCustomFoodButton.setOnClickListener(new View.OnClickListener() {
@@ -273,6 +319,72 @@ public class MainSwipeActivity extends AppCompatActivity {
       return view;
     }
 
+    private void setGoal(TextView goalCaloriesTextView) {
+      goalCaloriesTextView.setText("Goal Calories: " + String.valueOf(goalCalories));
+      checkGoalColor(goalCaloriesTextView);
+      goalCaloriesTextView.invalidate();
+    }
+
+    private void checkGoalColor(TextView goalCaloriesTextView) {
+      if (goalCalories > getTotalCalories(currentFoodsListAdapter)) {
+        goalCaloriesTextView.setTextColor(Color.RED);
+      }else {
+        goalCaloriesTextView.setTextColor(Color.GREEN);
+      }
+    }
+
+    @Override
+    public void onStart() {
+      super.onStart();
+      loadAll();
+    }
+
+    @Override
+    public void onStop() {
+      super.onStop();
+      saveAll();
+    }
+
+    private void loadAll()  {
+      loadAllFoods();
+      loadCurrentFoods(currentFoodsListAdapter);
+      loadGoals();
+    }
+
+    private void saveAll()  {
+      saveAllFoods();
+      saveCurrentFoods(currentFoodsListAdapter);
+      saveGoals();
+    }
+
+    private void loadAllFoods() {
+      SharedPreferences preferences = getActivity().getSharedPreferences("all_foods", 0);
+      String allFoodsString = preferences.getString("all_foods", null);
+      if (allFoodsString != null) {
+        Type type = new TypeToken<List<Food>>() {
+        }.getType();
+        List<Food> allFoodsList = new Gson().fromJson(allFoodsString, type);
+        for (Food food : allFoodsList)  {
+          if (allFoods == null) {
+            allFoods = new HashMap<>();
+          }
+          allFoods.put(food.getName().toUpperCase(), food);
+        }
+      }
+    }
+
+    private void saveGoals()  {
+      SharedPreferences preferences = getActivity().getSharedPreferences("goals", 0);
+      SharedPreferences.Editor editor = preferences.edit();
+      editor.putString("calories", String.valueOf(goalCalories));
+      editor.apply();
+    }
+
+    private void loadGoals()  {
+      SharedPreferences preferences = getActivity().getSharedPreferences("goals", 0);
+      goalCalories = Double.valueOf(preferences.getString("calories", "-1"));
+    }
+
     private void loadCurrentFoods(ArrayAdapter<String> adapter) {
       SharedPreferences preferences = getActivity().getSharedPreferences("current_foods", 0);
       Set<String> strings = preferences.getStringSet("current_food_strings", null);
@@ -281,12 +393,24 @@ public class MainSwipeActivity extends AppCompatActivity {
       }
     }
 
-    private void saveCurrentFoods(ArrayAdapter<String> adapter) {
+    private void saveAllFoods() {
+      SharedPreferences preferences = getActivity().getSharedPreferences("all_foods", 0);
+      SharedPreferences.Editor editor = preferences.edit();
+      List<Food> allFoodsList = new ArrayList<>();
+      for (Map.Entry entry : allFoods.entrySet()) {
+        allFoodsList.add((Food)entry.getValue());
+      }
+      String allFoodsListString = new Gson().toJson(allFoodsList);
+      editor.putString("all_foods", allFoodsListString);
+      editor.commit();
+    }
+
+    private void saveCurrentFoods(ListAdapter adapter) {
       SharedPreferences preferences = getActivity().getSharedPreferences("current_foods", 0);
       SharedPreferences.Editor editor = preferences.edit();
       Set<String> set = new HashSet<>();
       for (int i = 0; i < adapter.getCount(); i++)  {
-        set.add(adapter.getItem(i));
+        set.add((String)adapter.getItem(i));
       }
       editor.putStringSet("current_food_strings", set);
       editor.apply();
@@ -294,6 +418,7 @@ public class MainSwipeActivity extends AppCompatActivity {
 
     private void recalculateTotalCalories(TextView caloriesText, ArrayAdapter<String> currentFoodsListAdapter) {
       caloriesText.setText("Total Calories: " + String.valueOf(getTotalCalories(currentFoodsListAdapter)));
+      checkGoalColor(goalCaloriesTextView);
     }
 
     private boolean validateFoodForm(String name, String protein, String carbs, String fat)  {

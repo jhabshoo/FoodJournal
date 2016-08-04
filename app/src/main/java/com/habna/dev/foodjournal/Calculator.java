@@ -37,6 +37,36 @@ public class Calculator {
     this.activity = activity;
   }
 
+  public double getGoalCals()  {
+    double cals = getActiveMultiplier() * calculateBMR();
+    return cals;
+  }
+
+  private double getActiveMultiplier()  {
+    double mult;
+    switch (activity) {
+      case SEDENTARY:
+        mult = 1.2;
+        break;
+      case LIGHTLY:
+        mult = 1.35;
+        break;
+      case MODERATELY:
+        mult = 1.55;
+        break;
+      case VERY:
+        mult = 1.75;
+        break;
+      case EXTREMELY:
+        mult = 2.05;
+        break;
+      default:
+        mult = -1;
+        break;
+    }
+    return mult;
+  }
+
   private double calculateBMR() {
     if (bodyFat == -1) {
       double bmr = bmrBenedict() + bmrMifflin() + bmrOwen() + bmrKatch();
