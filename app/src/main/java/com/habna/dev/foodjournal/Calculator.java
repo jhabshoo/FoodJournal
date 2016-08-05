@@ -19,8 +19,8 @@ public class Calculator {
     EXTREMELY
   }
 
-  public static final double MALE_FLOOR = 1800;
-  public static final double FEMALE_FLOOR = 1200;
+  public static final double MALE_FLOOR = 1400;
+  public static final double FEMALE_FLOOR = 800;
 
   private double height;
   private double weight;

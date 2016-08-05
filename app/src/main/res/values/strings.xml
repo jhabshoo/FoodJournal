@@ -27,5 +27,6 @@
         <item>Maintain</item>
         <item>Gain</item>
     </string-array>
+    <string name="title_activity_settings">SettingsActivity</string>
 
 </resources>

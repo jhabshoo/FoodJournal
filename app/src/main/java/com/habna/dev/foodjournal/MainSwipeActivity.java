@@ -3,6 +3,7 @@ package com.habna.dev.foodjournal;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.support.annotation.Nullable;
@@ -611,7 +612,53 @@ public class MainSwipeActivity extends AppCompatActivity {
           }
         }
       });
+      Button imperialButton = (Button) view.findViewById(R.id.imperialButton);
+      imperialButton.setOnClickListener(new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+          String height = heightText.getText().toString();
+          String weight = weightText.getText().toString();
+          String bodyFat = bodyFatText.getText().toString();
+          String sex = sexAdapter.getItem(sexSpinner.getSelectedItemPosition()).toString();
+          String active = activeAdapter.getItem(activeSpinner.getSelectedItemPosition()).toString();
+          String goal = goalAdapter.getItem(goalSpinner.getSelectedItemPosition()).toString();
+          String age = ageText.getText().toString();
+          String weekLoss = weekLossText.getText().toString();
+          try {
+            double h = Double.valueOf(height);
+            double w = Double.valueOf(weight);
+            double bf = bodyFat.isEmpty() ? -1 : Double.valueOf(bodyFat);
+            boolean male = sex.toUpperCase().equals("DUDE") ? true : false;
+            Calculator.ACTIVE_TYPE act = Calculator.getActiveByString(active);
+            Calculator.GOAL_TYPE g = Calculator.getGoalByString(goal);
+            int a = Integer.valueOf(age);
+            double wl = weekLoss.isEmpty() ? Double.valueOf(0.0) : Double.valueOf(weekLoss);
+            Calculator calculator = new Calculator(imperialToMetricHeight(h),
+              imperialToMetricWeight(w), a, bf, male, g, act, wl);
+            goalCalories = calculator.getGoalCals();
+            double limit = male ? Calculator.MALE_FLOOR : Calculator.FEMALE_FLOOR;
+            if (goalCalories < limit)  {
+              goalText.setText("Goal exceeds your minimal caloric intake.");
+              goalText.setTextColor(Color.RED);
+            } else {
+              goalText.setText(GOAL + goalCalories + CALORIES_PER_DAY);
+              goalText.setTextColor(Color.BLACK);
+              saveGoals();
+            }
+          }catch (NumberFormatException nfe)  {
+
+          }
+        }
+      });
       return view;
+    }
+
+    private double imperialToMetricHeight(double inches) {
+      return inches * 2.54;
+    }
+
+    private double imperialToMetricWeight(double lbs) {
+      return lbs * 0.453592;
     }
 
     private void loadGoalsText() {
