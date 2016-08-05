@@ -5,29 +5,39 @@
               xmlns:android="http://schemas.android.com/apk/res/android"
               android:weightSum="1">
 
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                  android:orientation="vertical"
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                  android:orientation="horizontal"
                   android:layout_width="205dp"
                   android:layout_height="match_parent"
                   android:layout_weight="0.89">
 
-        <AutoCompleteTextView
+        <com.habna.dev.foodjournal.DelayAutoCompleteTextView
             android:id="@+id/searchTextView"
             android:layout_width="match_parent"
             android:layout_height="40dp"
             android:hint="Search..."
-            android:imeOptions="actionDone"
+            android:imeOptions="flagNoExtractUi|actionSearch"
             android:focusableInTouchMode="true"/>
 
         <ListView
             android:id="@+id/currentFoodsListView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="match_parent"
+            android:layout_below="@id/searchTextView"/>
 
-    </LinearLayout>
+    </RelativeLayout>
     <RelativeLayout
         android:layout_width="113dp"
         android:layout_height="match_parent">
+
+        <ProgressBar
+            android:id="@+id/pb_loading_indicator"
+            style="?android:attr/progressBarStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical|right"
+            android:visibility="gone"/>
+
 
         <Button
             android:layout_width="106dp"

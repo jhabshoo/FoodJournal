@@ -31,6 +31,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.SimpleAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -164,9 +165,10 @@ public class MainSwipeActivity extends AppCompatActivity {
 
     private static Map<String, Food> allFoods;
     private ListView currentFoodsListView;
-    private ArrayAdapter<String> currentFoodsListAdapter;
+    private FoodListAdapter currentFoodsListAdapter;
     private TextView goalCaloriesTextView;
     private Double goalCalories;
+    private Food currentFood;
 
     @Nullable
     @Override
@@ -174,15 +176,12 @@ public class MainSwipeActivity extends AppCompatActivity {
                              @Nullable Bundle savedInstanceState) {
       super.onCreateView(inflater, container, savedInstanceState);
       final View view = inflater.inflate(R.layout.fragment_journal, container, false);
-      currentFoodsListAdapter = new ArrayAdapter<>(getActivity(),
-        android.R.layout.simple_dropdown_item_1line, getCurrentFoodStrings());
+      currentFoodsListAdapter = new FoodListAdapter(getActivity(), new ArrayList<Food>());
 
       goalCaloriesTextView = (TextView) view.findViewById(R.id.goalCaloriesTextView);
 
       final TextView totalCaloriesTextView = (TextView) view.findViewById(R.id.totalCaloriesTextView);
-      loadGoals();
-      loadCurrentFoods(currentFoodsListAdapter);
-      loadAllFoods();
+      load();
       recalculateTotalCalories(totalCaloriesTextView, currentFoodsListAdapter);
       setGoal(goalCaloriesTextView);
 
@@ -192,7 +191,7 @@ public class MainSwipeActivity extends AppCompatActivity {
         @Override
         public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
           final int position = i;
-          String key = getName(currentFoodsListAdapter, position).toUpperCase();
+          String key = ((Food)currentFoodsListAdapter.getItem(i)).getName().toUpperCase();
           Food food = allFoods.get(key);
           if (food != null) {
             Context context = getActivity();
@@ -222,7 +221,7 @@ public class MainSwipeActivity extends AppCompatActivity {
             builder.setNegativeButton("Remove", new DialogInterface.OnClickListener() {
               @Override
               public void onClick(DialogInterface dialogInterface, int i) {
-                currentFoodsListAdapter.remove(currentFoodsListAdapter.getItem(position));
+                currentFoodsListAdapter.remove(position);
                 recalculateTotalCalories(totalCaloriesTextView, currentFoodsListAdapter);
               }
             });
@@ -231,17 +230,33 @@ public class MainSwipeActivity extends AppCompatActivity {
         }
       });
 
-      final AutoCompleteTextView searchTextView = (AutoCompleteTextView) (view.findViewById(R.id.searchTextView));
-      searchTextView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+      final FoodAutoCompleteAdapter autoSearchTextViewAdapter = new FoodAutoCompleteAdapter(getActivity());
+      final DelayAutoCompleteTextView autoSearchTextView = (DelayAutoCompleteTextView) view.findViewById(R.id.searchTextView);
+      autoSearchTextView.setThreshold(3);
+      autoSearchTextView.setAdapter(autoSearchTextViewAdapter);
+      autoSearchTextView.setLoadingIndicator((android.widget.ProgressBar) view.findViewById(R.id.pb_loading_indicator));
+      autoSearchTextView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+          currentFood = (Food)adapterView.getItemAtPosition(i);
+          autoSearchTextView.setText(currentFood.getName());
+        }
+      });
+      autoSearchTextView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
         @Override
         public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
           if (i == KeyEvent.ACTION_DOWN)  {
             if (!textView.getText().toString().isEmpty()) {
               String key = textView.getText().toString().toUpperCase();
               Food f = getFoodFromAllFoods(key);
+              if (f == null && currentFood != null)  {
+                f = currentFood;
+                addToAllFoods(f);
+              }
               if (f != null) {
-                currentFoodsListAdapter.add(f.displayString());
+                currentFoodsListAdapter.addFood(f);
                 recalculateTotalCalories(totalCaloriesTextView, currentFoodsListAdapter);
+                currentFood = null;
               }
             }
             textView.setText("");
@@ -249,9 +264,6 @@ public class MainSwipeActivity extends AppCompatActivity {
           return false;
         }
       });
-      final ArrayAdapter<String> searchAdapter = new ArrayAdapter(getActivity(),
-        android.R.layout.simple_dropdown_item_1line, getAllFoodsKeys());
-      searchTextView.setAdapter(searchAdapter);
 
       Button goalButton = (Button) view.findViewById(R.id.goalButton);
       goalButton.setOnClickListener(new View.OnClickListener() {
@@ -317,9 +329,9 @@ public class MainSwipeActivity extends AppCompatActivity {
               final String carbsText = carbs.getText().toString();
               final String fatText = fat.getText().toString();
               if (validateFoodForm(nameText, proteinText, carbsText, fatText))  {
-                searchAdapter.add(nameText.toUpperCase());
-                addToAllFoods(new Food(nameText, Double.valueOf(proteinText),
-                  Double.valueOf(carbsText), Double.valueOf(fatText)));
+                Food food = new Food(nameText, Double.valueOf(proteinText),
+                  Double.valueOf(carbsText), Double.valueOf(fatText));
+                addToAllFoods(food);
                 Toast.makeText(getActivity(), "Added " + nameText, Toast.LENGTH_SHORT).show();
               }
             }
@@ -414,12 +426,15 @@ public class MainSwipeActivity extends AppCompatActivity {
       setGoal(goalCaloriesTextView);
     }
 
-    private void loadCurrentFoods(ArrayAdapter<String> adapter) {
+    private void loadCurrentFoods(FoodListAdapter adapter) {
       SharedPreferences preferences = getActivity().getSharedPreferences("current_foods", 0);
       Set<String> strings = preferences.getStringSet("current_food_strings", null);
       if (strings != null)  {
         adapter.clear();
-        adapter.addAll(strings);
+        for (String str : strings)  {
+          Food food = allFoods.get(str.toUpperCase());
+          adapter.addFood(food);
+        }
       }
     }
 
@@ -440,14 +455,14 @@ public class MainSwipeActivity extends AppCompatActivity {
       SharedPreferences.Editor editor = preferences.edit();
       Set<String> set = new HashSet<>();
       for (int i = 0; i < adapter.getCount(); i++)  {
-        set.add((String)adapter.getItem(i));
+        set.add(((Food)adapter.getItem(i)).getName().toUpperCase());
       }
       editor.putStringSet("current_food_strings", set);
       editor.apply();
       currentFoodsListAdapter.clear();
     }
 
-    private void recalculateTotalCalories(TextView caloriesText, ArrayAdapter<String> currentFoodsListAdapter) {
+    private void recalculateTotalCalories(TextView caloriesText, FoodListAdapter currentFoodsListAdapter) {
       caloriesText.setText("Total Calories: " + String.valueOf(getTotalCalories(currentFoodsListAdapter)));
       checkGoalColor(goalCaloriesTextView);
     }
@@ -502,15 +517,10 @@ public class MainSwipeActivity extends AppCompatActivity {
       return allFoods.containsKey(key.toUpperCase());
     }
 
-    private List<String> getCurrentFoodStrings()  {
-      List<String> strings = new ArrayList<>();
-      return strings;
-    }
-
-    private double getTotalCalories(ArrayAdapter<String> adapter) {
+    private double getTotalCalories(FoodListAdapter adapter) {
       double total = 0;
       for (int i = 0; i < adapter.getCount(); i++)  {
-        Food f = allFoods.get(getName(adapter, i).toUpperCase());
+        Food f = allFoods.get(((Food)adapter.getItem(i)).getName().toUpperCase());
         total += f.getCalories();
       }
       return total;
@@ -519,7 +529,7 @@ public class MainSwipeActivity extends AppCompatActivity {
 
   private static String getName(ArrayAdapter<String> adapter, int pos) {
     String item = adapter.getItem(pos);
-    return item.substring(0, item.indexOf(","));
+    return item.indexOf("\n") == -1 ? item : item.substring(0, item.indexOf("\n"));
   }
 
   public static class CalculatorFragment extends Fragment implements FragmentLifecycle  {

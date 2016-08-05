@@ -31,30 +31,22 @@ public class Food {
   public String getName() {
     return name;
   }
-
-  public double getProtein() {
-    return protein;
-  }
-
-  public double getCarbs() {
-    return carbs;
-  }
-
-  public double getFat() {
-    return fat;
-  }
-
   public double getCalories() {
     return calories;
   }
 
   @Override
   public String toString()  {
-    return "Food [name=" + name + ",protein=" + protein + ",carbs=" + carbs + ",fat=" + fat + "]";
+//    return "Food [name=" + name + ",protein=" + protein + ",carbs=" + carbs + ",fat=" + fat + "]";
+    return name + "\n" + getNutrition();
   }
 
   public String displayString() {
-    return name + ", Cal: " + calories;
+    return toString();
+  }
+
+  public String getNutrition()  {
+    return calories + " cal  " + protein + " p  " + carbs + " c  " + fat + " f\n";
   }
 
   public String getProteinDisplay() {
