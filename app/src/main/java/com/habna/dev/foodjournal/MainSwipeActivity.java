@@ -4,7 +4,6 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
-import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -80,7 +79,23 @@ public class MainSwipeActivity extends AppCompatActivity {
     // Set up the ViewPager with the sections adapter.
     mViewPager = (ViewPager) findViewById(R.id.container);
     mViewPager.setAdapter(mSectionsPagerAdapter);
+    mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+      @Override
+      public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 
+      }
+
+      @Override
+      public void onPageSelected(int position) {
+        FragmentLifecycle fragment = (FragmentLifecycle) mSectionsPagerAdapter.instantiateItem(mViewPager, position);
+        fragment.loadGoals();
+      }
+
+      @Override
+      public void onPageScrollStateChanged(int state) {
+
+      }
+    });
   }
 
 
@@ -144,13 +159,13 @@ public class MainSwipeActivity extends AppCompatActivity {
     }
   }
 
-  public static class JournalFragment extends Fragment  {
+  public static class JournalFragment extends Fragment implements FragmentLifecycle {
 
     private static Map<String, Food> allFoods;
     private ListView currentFoodsListView;
-    private Double goalCalories;
     private ArrayAdapter<String> currentFoodsListAdapter;
     private TextView goalCaloriesTextView;
+    private Double goalCalories;
 
     @Nullable
     @Override
@@ -324,6 +339,7 @@ public class MainSwipeActivity extends AppCompatActivity {
       goalCaloriesTextView.setText("Goal Calories: " + String.valueOf(goalCalories));
       checkGoalColor(goalCaloriesTextView);
       goalCaloriesTextView.invalidate();
+      saveGoals();
     }
 
     private void checkGoalColor(TextView goalCaloriesTextView) {
@@ -387,13 +403,14 @@ public class MainSwipeActivity extends AppCompatActivity {
       editor.apply();
     }
 
-    private void loadGoals()  {
+    public void loadGoals()  {
       SharedPreferences preferences = getActivity().getSharedPreferences("goals", 0);
       try {
-        goalCalories = Double.valueOf(preferences.getString("calories", "-1"));
+        goalCalories = Double.valueOf(preferences.getString("calories", "0.0"));
       } catch (NumberFormatException nfe) {
         goalCalories = 0.0;
       }
+      setGoal(goalCaloriesTextView);
     }
 
     private void loadCurrentFoods(ArrayAdapter<String> adapter) {
@@ -502,10 +519,14 @@ public class MainSwipeActivity extends AppCompatActivity {
     return item.substring(0, item.indexOf(","));
   }
 
-  public static class CalculatorFragment extends Fragment {
+  public static class CalculatorFragment extends Fragment implements FragmentLifecycle  {
 
-    private Double goalCalories;
+    public static final String DAILY_CALORIES_TO_MAINTAIN = "Daily Calories To Maintain: ";
+    public static final String GOAL = "Goal: ";
+    public static final String CALORIES_PER_DAY = " calories per day";
     private TextView goalText;
+    private Double goalCalories;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -579,22 +600,20 @@ public class MainSwipeActivity extends AppCompatActivity {
               goalText.setText("Goal exceeds your minimal caloric intake.");
               goalText.setTextColor(Color.RED);
             } else {
-              goalText.setText("Goal: " + goalCalories + " calories per day");
+              goalText.setText(GOAL + goalCalories + CALORIES_PER_DAY);
               goalText.setTextColor(Color.BLACK);
+              saveGoals();
             }
           }catch (NumberFormatException nfe)  {
 
           }
         }
       });
-
-
-
       return view;
     }
 
     private void loadGoalsText() {
-      goalText.setText("Daily Calories To Maintain: " + goalCalories);
+      goalText.setText(DAILY_CALORIES_TO_MAINTAIN + goalCalories);
     }
 
     @Override
@@ -613,16 +632,16 @@ public class MainSwipeActivity extends AppCompatActivity {
       SharedPreferences preferences = getActivity().getSharedPreferences("goals", 0);
       SharedPreferences.Editor editor = preferences.edit();
       String val;
-      if (goalText.getText().toString().isEmpty()) {
+      if (goalCalories == null) {
         val = String.valueOf(0.0);
       }else {
-        val = String.valueOf(goalText.getText().toString());
+        val = String.valueOf(goalCalories);
       }
       editor.putString("calories", val);
       editor.apply();
     }
 
-    private void loadGoals()  {
+    public void loadGoals()  {
       SharedPreferences preferences = getActivity().getSharedPreferences("goals", 0);
       String str = preferences.getString("calories", "n/a");
       try {

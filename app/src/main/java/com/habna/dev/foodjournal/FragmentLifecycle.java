@@ -2,6 +2,6 @@ package com.habna.dev.foodjournal;
 
 public interface FragmentLifecycle {
 
-  public void onDataPass();
+  public void loadGoals();
 
 }

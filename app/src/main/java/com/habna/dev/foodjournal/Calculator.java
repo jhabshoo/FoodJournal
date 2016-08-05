@@ -77,7 +77,7 @@ public class Calculator {
   public double getGoalCals()  {
     double cals = getActiveMultiplier() * calculateBMR();
     cals = adjustForWeightLoss(cals);
-    return cals;
+    return Math.round(cals);
   }
 
   private double getActiveMultiplier()  {
