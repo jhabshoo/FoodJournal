@@ -33,8 +33,8 @@
         android:layout_alignTop="@+id/heightText"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
-        android:layout_toEndOf="@+id/submitButton"
-        android:layout_toRightOf="@+id/submitButton"/>
+        android:layout_toEndOf="@+id/heightText"
+        android:layout_toRightOf="@+id/heightText"/>
 
     <EditText
         android:layout_width="wrap_content"
@@ -51,9 +51,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/activitySpinner"
-        android:layout_below="@+id/ageTextView"
-        android:layout_alignRight="@+id/sexSpinner"
-        android:layout_alignEnd="@+id/sexSpinner"/>
+        android:layout_below="@+id/sexSpinner"
+        android:layout_toRightOf="@+id/weightText"
+        android:layout_toEndOf="@+id/weightText"/>
 
     <Spinner
         android:layout_width="wrap_content"
@@ -61,24 +61,25 @@
         android:id="@+id/goalSpinner"
         android:layout_below="@+id/activitySpinner"
         android:layout_alignRight="@+id/sexSpinner"
-        android:layout_alignEnd="@+id/sexSpinner"/>
+        android:layout_alignEnd="@+id/sexSpinner"
+        android:layout_alignLeft="@+id/activitySpinner"
+        android:layout_alignStart="@+id/activitySpinner"/>
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Submit"
         android:id="@+id/submitButton"
-        android:layout_below="@+id/goalSpinner"
-        android:layout_centerHorizontal="true"/>
+        android:layout_below="@+id/weekLossText"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="36dp"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:id="@+id/goalTextView"
-        android:layout_below="@+id/submitButton"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"/>
+        android:layout_below="@+id/submitButton"/>
 
     <EditText
         android:layout_width="wrap_content"
@@ -99,7 +100,9 @@
         android:id="@+id/weekLossText"
         android:hint="Lbs per week"
         android:visibility="invisible"
-        android:layout_below="@+id/goalSpinner"
-        android:layout_toRightOf="@+id/goalTextView"
-        />
+        android:layout_below="@+id/ageTextView"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_toRightOf="@+id/submitButton"
+        android:layout_toEndOf="@+id/submitButton"/>
 </RelativeLayout>

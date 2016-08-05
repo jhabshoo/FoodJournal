@@ -37,9 +37,6 @@ import android.widget.Toast;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
-import org.w3c.dom.Text;
-
-import java.lang.reflect.Array;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -87,8 +84,11 @@ public class MainSwipeActivity extends AppCompatActivity {
 
       @Override
       public void onPageSelected(int position) {
+        int oldFrag = position == 0 ? 1 : 0;
+        FragmentLifecycle oldFragment = (FragmentLifecycle) mSectionsPagerAdapter.instantiateItem(mViewPager, oldFrag);
+        oldFragment.save();
         FragmentLifecycle fragment = (FragmentLifecycle) mSectionsPagerAdapter.instantiateItem(mViewPager, position);
-        fragment.loadGoals();
+        fragment.load();
       }
 
       @Override
@@ -180,12 +180,12 @@ public class MainSwipeActivity extends AppCompatActivity {
 
       final TextView totalCaloriesTextView = (TextView) view.findViewById(R.id.totalCaloriesTextView);
       loadGoals();
+      loadCurrentFoods(currentFoodsListAdapter);
+      loadAllFoods();
       recalculateTotalCalories(totalCaloriesTextView, currentFoodsListAdapter);
       setGoal(goalCaloriesTextView);
 
       currentFoodsListView = (ListView) view.findViewById(R.id.currentFoodsListView);
-      loadCurrentFoods(currentFoodsListAdapter);
-      loadAllFoods();
       currentFoodsListView.setAdapter(currentFoodsListAdapter);
       currentFoodsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
         @Override
@@ -353,22 +353,22 @@ public class MainSwipeActivity extends AppCompatActivity {
     @Override
     public void onStart() {
       super.onStart();
-      loadAll();
+      load();
     }
 
     @Override
     public void onStop() {
       super.onStop();
-      saveAll();
+      save();
     }
 
-    private void loadAll()  {
+    public void load()  {
       loadAllFoods();
       loadCurrentFoods(currentFoodsListAdapter);
       loadGoals();
     }
 
-    private void saveAll()  {
+    public void save()  {
       saveAllFoods();
       saveCurrentFoods(currentFoodsListAdapter);
       saveGoals();
@@ -417,6 +417,7 @@ public class MainSwipeActivity extends AppCompatActivity {
       SharedPreferences preferences = getActivity().getSharedPreferences("current_foods", 0);
       Set<String> strings = preferences.getStringSet("current_food_strings", null);
       if (strings != null)  {
+        adapter.clear();
         adapter.addAll(strings);
       }
     }
@@ -442,6 +443,7 @@ public class MainSwipeActivity extends AppCompatActivity {
       }
       editor.putStringSet("current_food_strings", set);
       editor.apply();
+      currentFoodsListAdapter.clear();
     }
 
     private void recalculateTotalCalories(TextView caloriesText, ArrayAdapter<String> currentFoodsListAdapter) {
@@ -641,7 +643,15 @@ public class MainSwipeActivity extends AppCompatActivity {
       editor.apply();
     }
 
-    public void loadGoals()  {
+    public void save()  {
+      saveGoals();
+    }
+
+    public void load()  {
+      loadGoals();
+    }
+
+    private void loadGoals()  {
       SharedPreferences preferences = getActivity().getSharedPreferences("goals", 0);
       String str = preferences.getString("calories", "n/a");
       try {
