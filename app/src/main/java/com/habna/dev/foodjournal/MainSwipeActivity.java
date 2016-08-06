@@ -3,9 +3,9 @@ package com.habna.dev.foodjournal;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -25,13 +25,11 @@ import android.view.ViewGroup;
 
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.ListView;
-import android.widget.SimpleAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -48,6 +46,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class MainSwipeActivity extends AppCompatActivity {
+  public static Map<String, Food> usdaFoodMap;
 
   /**
    * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -68,6 +67,7 @@ public class MainSwipeActivity extends AppCompatActivity {
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main_swipe);
+    AsyncTask loadUsdaFoodsTask = new NutritionInfoFetch().execute();
 
     Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
     setSupportActionBar(toolbar);
@@ -309,6 +309,8 @@ public class MainSwipeActivity extends AppCompatActivity {
           final EditText fat = new EditText(context);
           fat.setHint("Fat (g)");
           fat.setInputType(InputType.TYPE_NUMBER_FLAG_DECIMAL);
+          final EditText measure = new EditText(context);
+          measure.setText("Measurement");
 
           LinearLayout layout = new LinearLayout(context);
           layout.setOrientation(LinearLayout.VERTICAL);
@@ -316,6 +318,7 @@ public class MainSwipeActivity extends AppCompatActivity {
           layout.addView(protein);
           layout.addView(carbs);
           layout.addView(fat);
+          layout.addView(measure);
 
           final AlertDialog.Builder builder = new AlertDialog.Builder(context);
           builder.setTitle("Add custom food item");
@@ -328,9 +331,10 @@ public class MainSwipeActivity extends AppCompatActivity {
               final String proteinText = protein.getText().toString();
               final String carbsText = carbs.getText().toString();
               final String fatText = fat.getText().toString();
+              final String measureText = measure.getText().toString();
               if (validateFoodForm(nameText, proteinText, carbsText, fatText))  {
                 Food food = new Food(nameText, Double.valueOf(proteinText),
-                  Double.valueOf(carbsText), Double.valueOf(fatText));
+                  Double.valueOf(carbsText), Double.valueOf(fatText), measureText);
                 addToAllFoods(food);
                 currentFoodsListAdapter.addFood(food);
                 recalculateTotalCalories(totalCaloriesTextView, currentFoodsListAdapter);

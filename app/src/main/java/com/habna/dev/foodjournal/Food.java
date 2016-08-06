@@ -10,18 +10,30 @@ public class Food {
   private double carbs;
   private double fat;
   private double calories;
+  private String measure;
 
   public Food() {
 
   }
 
-  public Food(String name, double protein, double carbs, double fat) {
+  public Food(String name, double protein, double carbs, double fat, String measure) {
     super();
     this.name = name;
     this.protein = protein;
     this.carbs = carbs;
     this.fat = fat;
+    this.measure = measure;
     calculateCalories();
+  }
+
+  public Food(String name, double protein, double carbs, double fat, String measure, double calories) {
+    super();
+    this.name = name;
+    this.protein = protein;
+    this.carbs = carbs;
+    this.fat = fat;
+    this.measure = measure;
+    this.calories = calories;
   }
 
   private void calculateCalories()  {
@@ -30,6 +42,10 @@ public class Food {
 
   public String getName() {
     return name;
+  }
+
+  public String getNameAndMeasure() {
+    return name + ", " + measure;
   }
   public double getCalories() {
     return calories;

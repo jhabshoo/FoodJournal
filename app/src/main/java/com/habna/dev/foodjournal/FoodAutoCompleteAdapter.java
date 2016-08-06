@@ -17,6 +17,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class FoodAutoCompleteAdapter extends BaseAdapter implements Filterable {
 
@@ -55,7 +56,7 @@ public class FoodAutoCompleteAdapter extends BaseAdapter implements Filterable {
         .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
       convertView = inflater.inflate(R.layout.simple_dropdown_item_2line, parent, false);
     }
-    ((TextView) convertView.findViewById(R.id.searchText1)).setText(getItem(position).getName());
+    ((TextView) convertView.findViewById(R.id.searchText1)).setText(getItem(position).getNameAndMeasure());
     ((TextView) convertView.findViewById(R.id.searchText2)).setText(getItem(position).getNutrition());
     return convertView;
   }
@@ -92,29 +93,36 @@ public class FoodAutoCompleteAdapter extends BaseAdapter implements Filterable {
    * Returns a search result for the given book title.
    */
   private List<Food> findFoods(String name) {
-    HttpURLConnection connection = null;
-    try {
-      URL url = new URL(buildSearchUrlString(name));
-      connection = (HttpURLConnection) url.openConnection();
-      connection.setRequestMethod("GET");
-      connection.connect();
-      BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
-      String line;
-      List<String> ids = new ArrayList<>();
-      while ((line = reader.readLine()) != null)  {
-        if (line.contains("ndbno")) {
-          ids.add(line.substring(line.indexOf("ndbno")+9).replace("\"", ""));
-        }
-      }
-      reader.close();
-      return fetchFoodInfo(ids);
-    } catch (Exception e) {
-      return new ArrayList<>();
-    } finally {
-      if (connection != null) {
-        connection.disconnect();
+    List<Food> results = new ArrayList<>();
+    for (Map.Entry<String, Food> entry : MainSwipeActivity.usdaFoodMap.entrySet())  {
+      if (entry.getKey().contains(name.toUpperCase())) {
+        results.add(entry.getValue());
       }
     }
+    return results;
+//    HttpURLConnection connection = null;
+//    try {
+//      URL url = new URL(buildSearchUrlString(name));
+//      connection = (HttpURLConnection) url.openConnection();
+//      connection.setRequestMethod("GET");
+//      connection.connect();
+//      BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
+//      String line;
+//      List<String> ids = new ArrayList<>();
+//      while ((line = reader.readLine()) != null)  {
+//        if (line.contains("ndbno")) {
+//          ids.add(line.substring(line.indexOf("ndbno")+9).replace("\"", ""));
+//        }
+//      }
+//      reader.close();
+//      return fetchFoodInfo(ids);
+//    } catch (Exception e) {
+//      return new ArrayList<>();
+//    } finally {
+//      if (connection != null) {
+//        connection.disconnect();
+//      }
+//    }
   }
 
   private List<Food> fetchFoodInfo(List<String> ids) {
@@ -156,7 +164,7 @@ public class FoodAutoCompleteAdapter extends BaseAdapter implements Filterable {
             line = reader.readLine();
             line = reader.readLine();
             carbs = getNutrientValue(line);
-            Food food = new Food(name, Double.valueOf(protein), Double.valueOf(carbs), Double.valueOf(fat));
+            Food food = new Food(name, Double.valueOf(protein), Double.valueOf(carbs), Double.valueOf(fat), "");
             results.add(food);
           }
           builder.append(line+"\n");
@@ -197,11 +205,11 @@ public class FoodAutoCompleteAdapter extends BaseAdapter implements Filterable {
   }
 
   private List<Food> getTestData()  {
-    Food f1 = new Food("STEAK", 35, 0, 14);
-    Food f2 = new Food("CHICKEN BREAST", 16, 0, 3);
-    Food f3 = new Food("WHOLE WHEAT BREAD", 2, 24, 0);
-    Food f4 = new Food("PASTA", 0, 35, 0);
-    Food f5 = new Food("HAMBURGER", 25, 0, 12);
+    Food f1 = new Food("STEAK", 35, 0, 14, "16oz");
+    Food f2 = new Food("CHICKEN BREAST", 16, 0, 3, "2 breasts");
+    Food f3 = new Food("WHOLE WHEAT BREAD", 2, 24, 0, "4 slices");
+    Food f4 = new Food("PASTA", 0, 35, 0, "2 bowls");
+    Food f5 = new Food("HAMBURGER", 25, 0, 12, "4 sliders");
     List<Food> foodList = new ArrayList<>();
     foodList.add(f1);
     foodList.add(f2);
