@@ -65,6 +65,18 @@ public class Food {
     return calories + " cal  " + protein + " p  " + carbs + " c  " + fat + " f\n";
   }
 
+  public double getProtein() {
+    return protein;
+  }
+
+  public double getCarbs() {
+    return carbs;
+  }
+
+  public double getFat() {
+    return fat;
+  }
+
   public String getProteinDisplay() {
     return protein + " g Protein";
   }

@@ -76,11 +76,12 @@ public class Calculator {
     return null;
   }
 
-  public double getGoalCals()  {
+  public Macros getMacros()  {
     double cals = getTDEE() * calculateBMR();
     cals = adjustForWeightLoss(cals);
-    return Math.round(cals);
+    return new Macros(weight, cals);
   }
+
 
   private double getTDEE()  {
     return tdeeHelper.getTDEE(workType, activity);
@@ -135,6 +136,46 @@ public class Calculator {
   private double bmrKatch() {
     double lbm = weight * (100-bodyFat) / 100;
     return 370 + (21.6 * lbm);
+  }
+
+  protected class Macros  {
+
+    private final double FAT_CALS = 9;
+    private final double PRO_CARB_CALS = 4;
+    private final double PRO_G_PER_LB = .825;
+    private double protein;
+    private double carbs;
+    private double fat;
+    private double tdee;
+
+    public Macros(double bodyWeight, double tdee)  {
+      this.tdee = tdee;
+      calculateMacros(bodyWeight);
+    }
+
+    private void calculateMacros(double bodyWeight) {
+      bodyWeight = bodyWeight * 2.2046226218;
+      protein = PRO_G_PER_LB * bodyWeight;
+      fat = (tdee * .25) / FAT_CALS;
+      double remainder = tdee - ((PRO_CARB_CALS * protein) + (FAT_CALS * fat));
+      carbs = remainder / PRO_CARB_CALS;
+    }
+
+    public double getProtein() {
+      return protein;
+    }
+
+    public double getCarbs() {
+      return carbs;
+    }
+
+    public double getFat() {
+      return fat;
+    }
+
+    public double getTdee() {
+      return tdee;
+    }
   }
 
 }

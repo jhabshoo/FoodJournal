@@ -167,7 +167,17 @@ public class MainSwipeActivity extends AppCompatActivity {
     private ListView currentFoodsListView;
     private FoodListAdapter currentFoodsListAdapter;
     private TextView goalCaloriesTextView;
+    private TextView goalProteinTextView;
+    private TextView goalCarbsTextView;
+    private TextView goalFatTextView;
+    private TextView totalCaloriesTextView;
+    private TextView totalProteinTextView;
+    private TextView totalCarbsTextView;
+    private TextView totalFatTextView;
     private Double goalCalories;
+    private Double goalProtein;
+    private Double goalCarbs;
+    private Double goalFat;
     private Food currentFood;
 
     @Nullable
@@ -179,11 +189,17 @@ public class MainSwipeActivity extends AppCompatActivity {
       currentFoodsListAdapter = new FoodListAdapter(getActivity(), new ArrayList<Food>());
 
       goalCaloriesTextView = (TextView) view.findViewById(R.id.goalCaloriesTextView);
+      goalProteinTextView = (TextView) view.findViewById(R.id.goalProteinTextView);
+      goalCarbsTextView = (TextView) view.findViewById(R.id.goalCarbsTextView);
+      goalFatTextView = (TextView) view.findViewById(R.id.goalFatTextView);
 
-      final TextView totalCaloriesTextView = (TextView) view.findViewById(R.id.totalCaloriesTextView);
+      totalCaloriesTextView = (TextView) view.findViewById(R.id.totalCaloriesTextView);
+      totalProteinTextView = (TextView) view.findViewById(R.id.totalProteinTextView);
+      totalCarbsTextView = (TextView) view.findViewById(R.id.totalCarbsTextView);
+      totalFatTextView = (TextView) view.findViewById(R.id.totalFatTextView);
       load();
-      recalculateTotalCalories(totalCaloriesTextView, currentFoodsListAdapter);
-      setGoal(goalCaloriesTextView);
+      recalculateTotals();
+      setGoals();
 
       currentFoodsListView = (ListView) view.findViewById(R.id.currentFoodsListView);
       currentFoodsListView.setAdapter(currentFoodsListAdapter);
@@ -222,7 +238,7 @@ public class MainSwipeActivity extends AppCompatActivity {
               @Override
               public void onClick(DialogInterface dialogInterface, int i) {
                 currentFoodsListAdapter.remove(position);
-                recalculateTotalCalories(totalCaloriesTextView, currentFoodsListAdapter);
+                recalculateTotals();
               }
             });
             builder.show();
@@ -255,7 +271,7 @@ public class MainSwipeActivity extends AppCompatActivity {
               }
               if (f != null) {
                 currentFoodsListAdapter.addFood(f);
-                recalculateTotalCalories(totalCaloriesTextView, currentFoodsListAdapter);
+                recalculateTotals();
                 currentFood = null;
               }
             }
@@ -270,19 +286,41 @@ public class MainSwipeActivity extends AppCompatActivity {
         @Override
         public void onClick(View view) {
           Context context = getActivity();
-          final EditText goal = new EditText(context);
-          goal.setHint("Daily goal calories");
-          goal.setInputType(InputType.TYPE_NUMBER_FLAG_DECIMAL);
+          final EditText goalCals = new EditText(context);
+          goalCals.setHint("Daily calories goal (kcal)");
+          goalCals.setInputType(InputType.TYPE_NUMBER_FLAG_DECIMAL);
+
+          final EditText goalPro = new EditText(context);
+          goalPro.setHint("Daily protein goal (g)");
+          goalPro.setInputType(InputType.TYPE_NUMBER_FLAG_DECIMAL);
+
+          final EditText goalCarb = new EditText(context);
+          goalCarb.setHint("Daily carbs goal (g)");
+          goalCarb.setInputType(InputType.TYPE_NUMBER_FLAG_DECIMAL);
+
+          final EditText goalFat = new EditText(context);
+          goalFat.setHint("Daily fat goal (g)");
+          goalFat.setInputType(InputType.TYPE_NUMBER_FLAG_DECIMAL);
+
+          LinearLayout linearLayout = new LinearLayout(context);
+          linearLayout.setOrientation(LinearLayout.VERTICAL);
+          linearLayout.addView(goalCals);
+          linearLayout.addView(goalPro);
+          linearLayout.addView(goalCarb);
+          linearLayout.addView(goalFat);
 
           final AlertDialog.Builder builder = new AlertDialog.Builder(context);
           builder.setTitle("Edit Daily Goal");
-          builder.setView(goal);
+          builder.setView(linearLayout);
           builder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
               try {
-                goalCalories = Double.valueOf(goal.getText().toString());
-                setGoal(goalCaloriesTextView);
+                goalCalories = Double.valueOf(goalCals.getText().toString());
+                goalProtein = Double.valueOf(goalPro.getText().toString());
+                goalCarbs = Double.valueOf(goalCarb.getText().toString());
+                goalCalories = Double.valueOf(goalFat.getText().toString());
+                setGoals();
               } catch (NumberFormatException nfe) {
               }
             }
@@ -337,7 +375,7 @@ public class MainSwipeActivity extends AppCompatActivity {
                   Double.valueOf(carbsText), Double.valueOf(fatText), measureText);
                 addToAllFoods(food);
                 currentFoodsListAdapter.addFood(food);
-                recalculateTotalCalories(totalCaloriesTextView, currentFoodsListAdapter);
+                recalculateTotals();
                 Toast.makeText(getActivity(), "Added " + nameText, Toast.LENGTH_SHORT).show();
               }
             }
@@ -354,19 +392,45 @@ public class MainSwipeActivity extends AppCompatActivity {
       return view;
     }
 
-    private void setGoal(TextView goalCaloriesTextView) {
-      goalCaloriesTextView.setText("Goal Calories: " + String.valueOf(goalCalories));
-      checkGoalColor(goalCaloriesTextView);
+    private void setGoals() {
+      goalCaloriesTextView.setText("Goal Calories: " + String.valueOf(Math.round(goalCalories)) + " kcal");
+      goalProteinTextView.setText("Goal Protein: " + String.valueOf(Math.round(goalProtein)) + " g");
+      goalCarbsTextView.setText("Goal Carbs: " + String.valueOf(Math.round(goalCarbs)) + " g");
+      goalFatTextView.setText("Goal Fat: " + String.valueOf(Math.round(goalFat)) + " g");
       goalCaloriesTextView.invalidate();
+      goalProteinTextView.invalidate();
+      goalCarbsTextView.invalidate();
+      goalFatTextView.invalidate();
+      checkGoalColors();
       saveGoals();
     }
 
-    private void checkGoalColor(TextView goalCaloriesTextView) {
-      if (goalCalories > getTotalCalories(currentFoodsListAdapter)) {
+    private void checkGoalColors() {
+      NutrientTally nutrientTally = new NutrientTally();
+      if (goalCalories > nutrientTally.getCals()) {
         goalCaloriesTextView.setTextColor(Color.RED);
       }else {
         goalCaloriesTextView.setTextColor(Color.GREEN);
       }
+      if (goalProtein > nutrientTally.getProtein()) {
+        goalProteinTextView.setTextColor(Color.RED);
+      }else {
+        goalProteinTextView.setTextColor(Color.GREEN);
+      }
+      if (goalCarbs > nutrientTally.getCarbs()) {
+        goalCarbsTextView.setTextColor(Color.RED);
+      }else {
+        goalCarbsTextView.setTextColor(Color.GREEN);
+      }
+      if (goalFat > nutrientTally.getFat()) {
+        goalFatTextView.setTextColor(Color.RED);
+      }else {
+        goalFatTextView.setTextColor(Color.GREEN);
+      }
+      goalCaloriesTextView.invalidate();
+      goalProteinTextView.invalidate();
+      goalCarbsTextView.invalidate();
+      goalFatTextView.invalidate();
     }
 
     @Override
@@ -412,13 +476,31 @@ public class MainSwipeActivity extends AppCompatActivity {
     private void saveGoals()  {
       SharedPreferences preferences = getActivity().getSharedPreferences("goals", 0);
       SharedPreferences.Editor editor = preferences.edit();
-      String val;
+      String cal, pro, carbs, fat;
       if (goalCalories == null) {
-        val = String.valueOf(0.0);
+        cal = String.valueOf(0.0);
       }else {
-        val = String.valueOf(goalCalories);
+        cal = String.valueOf(goalCalories);
       }
-      editor.putString("calories", val);
+      if (goalProtein == null) {
+        pro = String.valueOf(0.0);
+      }else {
+        pro = String.valueOf(goalProtein);
+      }
+      if (goalCarbs == null) {
+        carbs = String.valueOf(0.0);
+      }else {
+        carbs = String.valueOf(goalCarbs);
+      }
+      if (goalFat == null) {
+        fat = String.valueOf(0.0);
+      }else {
+        fat = String.valueOf(goalFat);
+      }
+      editor.putString("calories", cal);
+      editor.putString("protein", pro);
+      editor.putString("carbs", carbs);
+      editor.putString("fat", fat);
       editor.apply();
     }
 
@@ -426,10 +508,16 @@ public class MainSwipeActivity extends AppCompatActivity {
       SharedPreferences preferences = getActivity().getSharedPreferences("goals", 0);
       try {
         goalCalories = Double.valueOf(preferences.getString("calories", "0.0"));
+        goalProtein = Double.valueOf(preferences.getString("protein", "0.0"));
+        goalCarbs = Double.valueOf(preferences.getString("carbs", "0.0"));
+        goalFat = Double.valueOf(preferences.getString("fat", "0.0"));
       } catch (NumberFormatException nfe) {
         goalCalories = 0.0;
+        goalProtein = 0.0;
+        goalCarbs = 0.0;
+        goalFat = 0.0;
       }
-      setGoal(goalCaloriesTextView);
+      setGoals();
     }
 
     private void loadCurrentFoods(FoodListAdapter adapter) {
@@ -448,12 +536,14 @@ public class MainSwipeActivity extends AppCompatActivity {
       SharedPreferences preferences = getActivity().getSharedPreferences("all_foods", 0);
       SharedPreferences.Editor editor = preferences.edit();
       List<Food> allFoodsList = new ArrayList<>();
-      for (Map.Entry entry : allFoods.entrySet()) {
-        allFoodsList.add((Food)entry.getValue());
+      if (allFoods != null) {
+        for (Map.Entry entry : allFoods.entrySet()) {
+          allFoodsList.add((Food) entry.getValue());
+        }
+        String allFoodsListString = new Gson().toJson(allFoodsList);
+        editor.putString("all_foods", allFoodsListString);
+        editor.commit();
       }
-      String allFoodsListString = new Gson().toJson(allFoodsList);
-      editor.putString("all_foods", allFoodsListString);
-      editor.commit();
     }
 
     private void saveCurrentFoods(ListAdapter adapter) {
@@ -468,9 +558,13 @@ public class MainSwipeActivity extends AppCompatActivity {
       currentFoodsListAdapter.clear();
     }
 
-    private void recalculateTotalCalories(TextView caloriesText, FoodListAdapter currentFoodsListAdapter) {
-      caloriesText.setText("Total Calories: " + String.valueOf(getTotalCalories(currentFoodsListAdapter)));
-      checkGoalColor(goalCaloriesTextView);
+    private void recalculateTotals() {
+      NutrientTally nutrientTally = new NutrientTally();
+      totalCaloriesTextView.setText("Total Calories: " + String.valueOf(Math.round(nutrientTally.getCals())) + " kcal");
+      totalProteinTextView.setText("Total Protein: " + String.valueOf(Math.round(nutrientTally.getProtein())) + " g");
+      totalCarbsTextView.setText("Total Carbs: " + String.valueOf(Math.round(nutrientTally.getCarbs())) + " g");
+      totalFatTextView.setText("Total Fat: " + String.valueOf(Math.round(nutrientTally.getFat())) + " g");
+      checkGoalColors();
     }
 
     private boolean validateFoodForm(String name, String protein, String carbs, String fat)  {
@@ -523,13 +617,50 @@ public class MainSwipeActivity extends AppCompatActivity {
       return allFoods.containsKey(key.toUpperCase());
     }
 
-    private double getTotalCalories(FoodListAdapter adapter) {
-      double total = 0;
-      for (int i = 0; i < adapter.getCount(); i++)  {
-        Food f = allFoods.get(((Food)adapter.getItem(i)).getName().toUpperCase());
-        total += f.getCalories();
+    private class NutrientTally {
+      private double cals;
+      private double protein;
+      private double carbs;
+      private double fat;
+
+      public NutrientTally()  {
+        tally();
       }
-      return total;
+
+
+      private void tally() {
+        double totalCals = 0;
+        double totalProtein = 0;
+        double totalCarbs = 0;
+        double totalFat = 0;
+        for (int i = 0; i < currentFoodsListAdapter.getCount(); i++)  {
+          Food f = allFoods.get(((Food)currentFoodsListAdapter.getItem(i)).getName().toUpperCase());
+          totalCals += f.getCalories();
+          totalProtein += f.getProtein();
+          totalCarbs += f.getCarbs();
+          totalFat += f.getFat();
+        }
+        cals = totalCals;
+        protein = totalProtein;
+        carbs = totalCarbs;
+        fat = totalFat;
+      }
+
+      public double getCals() {
+        return cals;
+      }
+
+      public double getProtein() {
+        return protein;
+      }
+
+      public double getCarbs() {
+        return carbs;
+      }
+
+      public double getFat() {
+        return fat;
+      }
     }
   }
 
@@ -542,9 +673,12 @@ public class MainSwipeActivity extends AppCompatActivity {
 
     public static final String DAILY_CALORIES_TO_MAINTAIN = "Daily Calories To Maintain: ";
     public static final String GOAL = "Goal: ";
-    public static final String CALORIES_PER_DAY = " calories per day";
+    public static final String CALORIES_PER_DAY = " kcal";
     private TextView goalText;
     private Double goalCalories;
+    private Double goalProtein;
+    private Double goalCarbs;
+    private Double goalFat;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -619,13 +753,17 @@ public class MainSwipeActivity extends AppCompatActivity {
             int a = Integer.valueOf(age);
             double wl = weekLoss.isEmpty() ? Double.valueOf(0.0) : Double.valueOf(weekLoss);
             Calculator calculator = new Calculator(h, w, a, bf, male, g, act, work, wl);
-            goalCalories = calculator.getGoalCals();
+            Calculator.Macros macros = calculator.getMacros();
+            goalCalories = macros.getTdee();
+            goalProtein = macros.getProtein();
+            goalCarbs = macros.getCarbs();
+            goalFat = macros.getFat();
             double limit = male ? Calculator.MALE_FLOOR : Calculator.FEMALE_FLOOR;
             if (goalCalories < limit)  {
               goalText.setText("Goal exceeds your minimal caloric intake.");
               goalText.setTextColor(Color.RED);
             } else {
-              goalText.setText(GOAL + goalCalories + CALORIES_PER_DAY);
+              goalText.setText(buildDisplayText());
               goalText.setTextColor(Color.BLACK);
               saveGoals();
             }
@@ -659,13 +797,17 @@ public class MainSwipeActivity extends AppCompatActivity {
             double wl = weekLoss.isEmpty() ? Double.valueOf(0.0) : Double.valueOf(weekLoss);
             Calculator calculator = new Calculator(imperialToMetricHeight(h),
               imperialToMetricWeight(w), a, bf, male, g, act, work, wl);
-            goalCalories = calculator.getGoalCals();
+            Calculator.Macros macros = calculator.getMacros();
+            goalCalories = macros.getTdee();
+            goalProtein = macros.getProtein();
+            goalCarbs = macros.getCarbs();
+            goalFat = macros.getFat();
             double limit = male ? Calculator.MALE_FLOOR : Calculator.FEMALE_FLOOR;
             if (goalCalories < limit)  {
               goalText.setText("Goal exceeds your minimal caloric intake.");
               goalText.setTextColor(Color.RED);
             } else {
-              goalText.setText(GOAL + goalCalories + CALORIES_PER_DAY);
+              goalText.setText(buildDisplayText());
               goalText.setTextColor(Color.BLACK);
               saveGoals();
             }
@@ -677,6 +819,20 @@ public class MainSwipeActivity extends AppCompatActivity {
       return view;
     }
 
+    private String buildDisplayText() {
+      StringBuilder stringBuilder = new StringBuilder();
+      stringBuilder.append(GOAL);
+      stringBuilder.append(goalCalories);
+      stringBuilder.append(CALORIES_PER_DAY+"\n");
+      stringBuilder.append(Math.round(goalProtein));
+      stringBuilder.append(" g protein\n");
+      stringBuilder.append(Math.round(goalCarbs));
+      stringBuilder.append(" g carbs\n");
+      stringBuilder.append(Math.round(goalFat));
+      stringBuilder.append(" g fat");
+      return stringBuilder.toString();
+    }
+
     private double imperialToMetricHeight(double inches) {
       return inches * 2.54;
     }
@@ -686,7 +842,7 @@ public class MainSwipeActivity extends AppCompatActivity {
     }
 
     private void loadGoalsText() {
-      goalText.setText(DAILY_CALORIES_TO_MAINTAIN + goalCalories);
+      goalText.setText(buildDisplayText());
     }
 
     @Override
@@ -704,13 +860,31 @@ public class MainSwipeActivity extends AppCompatActivity {
     private void saveGoals() {
       SharedPreferences preferences = getActivity().getSharedPreferences("goals", 0);
       SharedPreferences.Editor editor = preferences.edit();
-      String val;
+      String cal, pro, carbs, fat;
       if (goalCalories == null) {
-        val = String.valueOf(0.0);
+        cal = String.valueOf(0.0);
       }else {
-        val = String.valueOf(goalCalories);
+        cal = String.valueOf(goalCalories);
       }
-      editor.putString("calories", val);
+      if (goalProtein == null) {
+        pro = String.valueOf(0.0);
+      }else {
+        pro = String.valueOf(goalProtein);
+      }
+      if (goalCarbs == null) {
+        carbs = String.valueOf(0.0);
+      }else {
+        carbs = String.valueOf(goalCarbs);
+      }
+      if (goalFat == null) {
+        fat = String.valueOf(0.0);
+      }else {
+        fat = String.valueOf(goalCalories);
+      }
+      editor.putString("calories", cal);
+      editor.putString("protein", pro);
+      editor.putString("carbs", carbs);
+      editor.putString("fat", fat);
       editor.apply();
     }
 
@@ -724,15 +898,22 @@ public class MainSwipeActivity extends AppCompatActivity {
 
     private void loadGoals()  {
       SharedPreferences preferences = getActivity().getSharedPreferences("goals", 0);
-      String str = preferences.getString("calories", "n/a");
+      String cal = preferences.getString("calories", "n/a");
+      String pro = preferences.getString("protein", "n/a");
+      String carbs = preferences.getString("carbs", "n/a");
+      String fat = preferences.getString("fat", "n/a");
       try {
-        goalCalories = Double.valueOf(str);
+        goalCalories = Double.valueOf(cal);
+        goalProtein = Double.valueOf(pro);
+        goalCarbs = Double.valueOf(carbs);
+        goalFat = Double.valueOf(fat);
       } catch (NumberFormatException nfe) {
         goalCalories = 0.0;
+        goalProtein = 0.0;
+        goalCarbs = 0.0;
+        goalFat = 0.0;
       }
       loadGoalsText();
     }
-
-
   }
 }
