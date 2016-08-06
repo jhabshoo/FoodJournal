@@ -332,6 +332,8 @@ public class MainSwipeActivity extends AppCompatActivity {
                 Food food = new Food(nameText, Double.valueOf(proteinText),
                   Double.valueOf(carbsText), Double.valueOf(fatText));
                 addToAllFoods(food);
+                currentFoodsListAdapter.addFood(food);
+                recalculateTotalCalories(totalCaloriesTextView, currentFoodsListAdapter);
                 Toast.makeText(getActivity(), "Added " + nameText, Toast.LENGTH_SHORT).show();
               }
             }
@@ -556,17 +558,21 @@ public class MainSwipeActivity extends AppCompatActivity {
       final EditText weekLossText = (EditText) view.findViewById(R.id.weekLossText);
       final Spinner sexSpinner = (Spinner) view.findViewById(R.id.sexSpinner);
       final Spinner activeSpinner = (Spinner) view.findViewById(R.id.activitySpinner);
+      final Spinner workTypeSpinner = (Spinner) view.findViewById(R.id.workTypeSpinner);
       final Spinner goalSpinner = (Spinner) view.findViewById(R.id.goalSpinner);
 
       final ArrayAdapter<CharSequence> sexAdapter = ArrayAdapter.createFromResource(context, R.array.sexes,
         android.R.layout.simple_spinner_dropdown_item);
       final ArrayAdapter<CharSequence> activeAdapter = ArrayAdapter.createFromResource(context, R.array.activities,
         android.R.layout.simple_spinner_item);
+      final ArrayAdapter<CharSequence> workTypeAdapter = ArrayAdapter.createFromResource(context, R.array.activities,
+        android.R.layout.simple_spinner_item);
       final ArrayAdapter<CharSequence> goalAdapter = ArrayAdapter.createFromResource(context, R.array.goals,
         android.R.layout.simple_spinner_item);
 
       sexSpinner.setAdapter(sexAdapter);
       activeSpinner.setAdapter(activeAdapter);
+      workTypeSpinner.setAdapter(workTypeAdapter);
       goalSpinner.setAdapter(goalAdapter);
       goalSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
         @Override
@@ -594,6 +600,7 @@ public class MainSwipeActivity extends AppCompatActivity {
           String bodyFat = bodyFatText.getText().toString();
           String sex = sexAdapter.getItem(sexSpinner.getSelectedItemPosition()).toString();
           String active = activeAdapter.getItem(activeSpinner.getSelectedItemPosition()).toString();
+          String workType = activeAdapter.getItem(workTypeSpinner.getSelectedItemPosition()).toString();
           String goal = goalAdapter.getItem(goalSpinner.getSelectedItemPosition()).toString();
           String age = ageText.getText().toString();
           String weekLoss = weekLossText.getText().toString();
@@ -603,10 +610,11 @@ public class MainSwipeActivity extends AppCompatActivity {
             double bf = bodyFat.isEmpty() ? -1 : Double.valueOf(bodyFat);
             boolean male = sex.toUpperCase().equals("DUDE") ? true : false;
             Calculator.ACTIVE_TYPE act = Calculator.getActiveByString(active);
+            Calculator.ACTIVE_TYPE work = Calculator.getActiveByString(workType);
             Calculator.GOAL_TYPE g = Calculator.getGoalByString(goal);
             int a = Integer.valueOf(age);
             double wl = weekLoss.isEmpty() ? Double.valueOf(0.0) : Double.valueOf(weekLoss);
-            Calculator calculator = new Calculator(h, w, a, bf, male, g, act, wl);
+            Calculator calculator = new Calculator(h, w, a, bf, male, g, act, work, wl);
             goalCalories = calculator.getGoalCals();
             double limit = male ? Calculator.MALE_FLOOR : Calculator.FEMALE_FLOOR;
             if (goalCalories < limit)  {
@@ -631,6 +639,7 @@ public class MainSwipeActivity extends AppCompatActivity {
           String bodyFat = bodyFatText.getText().toString();
           String sex = sexAdapter.getItem(sexSpinner.getSelectedItemPosition()).toString();
           String active = activeAdapter.getItem(activeSpinner.getSelectedItemPosition()).toString();
+          String workType = activeAdapter.getItem(workTypeSpinner.getSelectedItemPosition()).toString();
           String goal = goalAdapter.getItem(goalSpinner.getSelectedItemPosition()).toString();
           String age = ageText.getText().toString();
           String weekLoss = weekLossText.getText().toString();
@@ -640,11 +649,12 @@ public class MainSwipeActivity extends AppCompatActivity {
             double bf = bodyFat.isEmpty() ? -1 : Double.valueOf(bodyFat);
             boolean male = sex.toUpperCase().equals("DUDE") ? true : false;
             Calculator.ACTIVE_TYPE act = Calculator.getActiveByString(active);
+            Calculator.ACTIVE_TYPE work = Calculator.getActiveByString(workType);
             Calculator.GOAL_TYPE g = Calculator.getGoalByString(goal);
             int a = Integer.valueOf(age);
             double wl = weekLoss.isEmpty() ? Double.valueOf(0.0) : Double.valueOf(weekLoss);
             Calculator calculator = new Calculator(imperialToMetricHeight(h),
-              imperialToMetricWeight(w), a, bf, male, g, act, wl);
+              imperialToMetricWeight(w), a, bf, male, g, act, work, wl);
             goalCalories = calculator.getGoalCals();
             double limit = male ? Calculator.MALE_FLOOR : Calculator.FEMALE_FLOOR;
             if (goalCalories < limit)  {

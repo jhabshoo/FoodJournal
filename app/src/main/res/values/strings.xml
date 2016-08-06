@@ -19,7 +19,6 @@
         <item>Light</item>
         <item>Moderate</item>
         <item>Very</item>
-        <item>Extremely</item>
     </string-array>
 
     <string-array name="goals">

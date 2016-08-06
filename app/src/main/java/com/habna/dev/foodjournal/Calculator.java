@@ -15,8 +15,7 @@ public class Calculator {
     SEDENTARY,
     LIGHTLY,
     MODERATELY,
-    VERY,
-    EXTREMELY
+    VERY
   }
 
   public static final double MALE_FLOOR = 1400;
@@ -30,8 +29,12 @@ public class Calculator {
   private GOAL_TYPE goal;
   private double weeklyLbs;
   private ACTIVE_TYPE activity;
+  private ACTIVE_TYPE workType;
 
-  public Calculator(double height, double weight, int age, double bodyFat, boolean male, GOAL_TYPE goal, ACTIVE_TYPE activity, double weeklyLbs) {
+  private TDEEHelper tdeeHelper;
+
+  public Calculator(double height, double weight, int age, double bodyFat, boolean male,
+                    GOAL_TYPE goal, ACTIVE_TYPE activity, ACTIVE_TYPE workType, double weeklyLbs) {
     this.height = height;
     this.weight = weight;
     this.age = age;
@@ -39,7 +42,9 @@ public class Calculator {
     this.male = male;
     this.goal = goal;
     this.activity = activity;
+    this.workType = workType;
     this.weeklyLbs = weeklyLbs;
+    tdeeHelper = new TDEEHelper();
   }
 
   public static GOAL_TYPE getGoalByString(String str) {
@@ -68,41 +73,17 @@ public class Calculator {
     if ("VERY".equals(str.toUpperCase())) {
       return ACTIVE_TYPE.VERY;
     }
-    if ("EXTREMELY".equals(str.toUpperCase())) {
-      return ACTIVE_TYPE.EXTREMELY;
-    }
     return null;
   }
 
   public double getGoalCals()  {
-    double cals = getActiveMultiplier() * calculateBMR();
+    double cals = getTDEE() * calculateBMR();
     cals = adjustForWeightLoss(cals);
     return Math.round(cals);
   }
 
-  private double getActiveMultiplier()  {
-    double mult;
-    switch (activity) {
-      case SEDENTARY:
-        mult = 1.2;
-        break;
-      case LIGHTLY:
-        mult = 1.35;
-        break;
-      case MODERATELY:
-        mult = 1.55;
-        break;
-      case VERY:
-        mult = 1.75;
-        break;
-      case EXTREMELY:
-        mult = 2.05;
-        break;
-      default:
-        mult = -1;
-        break;
-    }
-    return mult;
+  private double getTDEE()  {
+    return tdeeHelper.getTDEE(workType, activity);
   }
 
   private double adjustForWeightLoss(double cals) {
@@ -155,4 +136,5 @@ public class Calculator {
     double lbm = weight * (100-bodyFat) / 100;
     return 370 + (21.6 * lbm);
   }
+
 }
