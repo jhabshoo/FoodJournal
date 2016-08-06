@@ -41,6 +41,7 @@ public class FoodListAdapter extends BaseAdapter {
 
   public void addFood(Food food) {
     foods.add(food);
+    notifyDataSetChanged();
   }
 
 

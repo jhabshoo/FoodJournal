@@ -46,7 +46,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class MainSwipeActivity extends AppCompatActivity {
-  public static Map<String, Food> usdaFoodMap;
+  public static Map<String, Food> usdaFoodMap = new HashMap<>();
 
   /**
    * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -238,6 +238,7 @@ public class MainSwipeActivity extends AppCompatActivity {
               @Override
               public void onClick(DialogInterface dialogInterface, int i) {
                 currentFoodsListAdapter.remove(position);
+                currentFoodsListAdapter.notifyDataSetChanged();
                 recalculateTotals();
               }
             });
@@ -248,7 +249,7 @@ public class MainSwipeActivity extends AppCompatActivity {
 
       final FoodAutoCompleteAdapter autoSearchTextViewAdapter = new FoodAutoCompleteAdapter(getActivity());
       final DelayAutoCompleteTextView autoSearchTextView = (DelayAutoCompleteTextView) view.findViewById(R.id.searchTextView);
-      autoSearchTextView.setThreshold(3);
+      autoSearchTextView.setThreshold(1);
       autoSearchTextView.setAdapter(autoSearchTextViewAdapter);
       autoSearchTextView.setLoadingIndicator((android.widget.ProgressBar) view.findViewById(R.id.pb_loading_indicator));
       autoSearchTextView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -348,7 +349,7 @@ public class MainSwipeActivity extends AppCompatActivity {
           fat.setHint("Fat (g)");
           fat.setInputType(InputType.TYPE_NUMBER_FLAG_DECIMAL);
           final EditText measure = new EditText(context);
-          measure.setText("Measurement");
+          measure.setHint("Measurement (ie. 1 cup)");
 
           LinearLayout layout = new LinearLayout(context);
           layout.setOrientation(LinearLayout.VERTICAL);
@@ -469,6 +470,7 @@ public class MainSwipeActivity extends AppCompatActivity {
             allFoods = new HashMap<>();
           }
           allFoods.put(food.getName().toUpperCase(), food);
+          MainSwipeActivity.usdaFoodMap.put(food.getName().toUpperCase(), food);
         }
       }
     }
@@ -601,6 +603,7 @@ public class MainSwipeActivity extends AppCompatActivity {
     private void addToAllFoods(Food food) {
       initAllFoodsIfNeeded();
       allFoods.put(food.getName().toUpperCase(), food);
+      MainSwipeActivity.usdaFoodMap.put(food.getName().toUpperCase(), food);
     }
 
     private void initAllFoodsIfNeeded() {
