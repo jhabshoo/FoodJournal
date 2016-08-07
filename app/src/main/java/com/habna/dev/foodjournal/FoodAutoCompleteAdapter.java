@@ -1,8 +1,6 @@
 package com.habna.dev.foodjournal;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,15 +9,9 @@ import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.TextView;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class FoodAutoCompleteAdapter extends BaseAdapter implements Filterable {
 
@@ -50,10 +42,11 @@ public class FoodAutoCompleteAdapter extends BaseAdapter implements Filterable {
     if (convertView == null) {
       LayoutInflater inflater = (LayoutInflater) mContext
         .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-      convertView = inflater.inflate(R.layout.simple_dropdown_item_2line, parent, false);
+      convertView = inflater.inflate(R.layout.simple_dropdown_item_3line, parent, false);
     }
-    ((TextView) convertView.findViewById(R.id.searchText1)).setText(getItem(position).getNameAndMeasure());
-    ((TextView) convertView.findViewById(R.id.searchText2)).setText(getItem(position).getNutrition());
+    ((TextView) convertView.findViewById(R.id.searchText1)).setText(getItem(position).getName());
+    ((TextView) convertView.findViewById(R.id.searchText2)).setText(getItem(position).getMeasure());
+//    ((TextView) convertView.findViewById(R.id.searchText3)).setText(getItem(position).getNutrition());
     return convertView;
   }
 

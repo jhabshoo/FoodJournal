@@ -16,6 +16,7 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
 import android.text.InputType;
+import android.util.Pair;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -23,6 +24,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -210,7 +212,9 @@ public class MainSwipeActivity extends AppCompatActivity {
           String key = ((Food)currentFoodsListAdapter.getItem(i)).getName().toUpperCase();
           Food food = allFoods.get(key);
           if (food != null) {
-            Context context = getActivity();
+            final Context context = getActivity();
+            TextView measure = new TextView(context);
+            measure.setText(food.getMeasure());
             TextView protein = new TextView(context);
             protein.setText(food.getProteinDisplay());
             TextView carbs = new TextView(context);
@@ -219,16 +223,20 @@ public class MainSwipeActivity extends AppCompatActivity {
             fat.setText(food.getFatDisplay());
             TextView calories = new TextView(context);
             calories.setText(food.getCalsDisplay());
+            final TextView quantity = new TextView(context);
+            quantity.setText("Quantity: " + currentFoodsListAdapter.getQuantity(i).toString());
 
             LinearLayout layout = new LinearLayout(context);
             layout.setOrientation(LinearLayout.VERTICAL);
+            layout.addView(measure);
             layout.addView(protein);
             layout.addView(carbs);
             layout.addView(fat);
             layout.addView(calories);
+            layout.addView(quantity);
 
             final AlertDialog.Builder builder = new AlertDialog.Builder(context);
-            builder.setTitle(food.getName());
+            builder.setTitle(food.getNameAndMeasure());
             builder.setView(layout);
             builder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
               @Override
@@ -237,9 +245,40 @@ public class MainSwipeActivity extends AppCompatActivity {
             builder.setNegativeButton("Remove", new DialogInterface.OnClickListener() {
               @Override
               public void onClick(DialogInterface dialogInterface, int i) {
-                currentFoodsListAdapter.remove(position);
-                currentFoodsListAdapter.notifyDataSetChanged();
-                recalculateTotals();
+                if (currentFoodsListAdapter.getQuantity(position) > 1) {
+                  final EditText quantityText = new EditText(context);
+                  quantityText.setHint("# to remove");
+                  quantityText.setInputType(InputType.TYPE_NUMBER_FLAG_DECIMAL);
+                  LinearLayout linearLayout = new LinearLayout(context);
+                  linearLayout.addView(quantityText);
+
+                  final AlertDialog.Builder quantityBuilder = new AlertDialog.Builder(context);
+                  quantityBuilder.setTitle("Remove item");
+                  quantityBuilder.setView(linearLayout);
+                  quantityBuilder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int pos) {
+                      try {
+                        int quantity = Integer.valueOf(quantityText.getText().toString());
+                        currentFoodsListAdapter.removeFood(position, quantity);
+                        recalculateTotals();
+                      } catch (NumberFormatException nfe) {
+
+                      }
+                    }
+                  });
+                  quantityBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+
+                    }
+                  });
+                  quantityBuilder.show();
+                } else  {
+                  currentFoodsListAdapter.remove(position);
+                  currentFoodsListAdapter.notifyDataSetChanged();
+                  recalculateTotals();
+                }
               }
             });
             builder.show();
@@ -259,10 +298,10 @@ public class MainSwipeActivity extends AppCompatActivity {
           autoSearchTextView.setText(currentFood.getName());
         }
       });
-      autoSearchTextView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+      autoSearchTextView.setOnEditorActionListener( new TextView.OnEditorActionListener() {
         @Override
         public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
-          if (i == KeyEvent.ACTION_DOWN)  {
+          if (i == EditorInfo.IME_ACTION_DONE)  {
             if (!textView.getText().toString().isEmpty()) {
               String key = textView.getText().toString().toUpperCase();
               Food f = getFoodFromAllFoods(key);
@@ -324,6 +363,12 @@ public class MainSwipeActivity extends AppCompatActivity {
                 setGoals();
               } catch (NumberFormatException nfe) {
               }
+            }
+          });
+          builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+
             }
           });
           builder.show();
@@ -466,6 +511,7 @@ public class MainSwipeActivity extends AppCompatActivity {
         }.getType();
         List<Food> allFoodsList = new Gson().fromJson(allFoodsString, type);
         for (Food food : allFoodsList)  {
+          // this is called on every switch only needed on first time or when new allFood
           if (allFoods == null) {
             allFoods = new HashMap<>();
           }
@@ -603,6 +649,9 @@ public class MainSwipeActivity extends AppCompatActivity {
     private void addToAllFoods(Food food) {
       initAllFoodsIfNeeded();
       allFoods.put(food.getName().toUpperCase(), food);
+      if (MainSwipeActivity.usdaFoodMap == null)  {
+        MainSwipeActivity.usdaFoodMap = new HashMap<>();
+      }
       MainSwipeActivity.usdaFoodMap.put(food.getName().toUpperCase(), food);
     }
 
@@ -638,10 +687,11 @@ public class MainSwipeActivity extends AppCompatActivity {
         double totalFat = 0;
         for (int i = 0; i < currentFoodsListAdapter.getCount(); i++)  {
           Food f = allFoods.get(((Food)currentFoodsListAdapter.getItem(i)).getName().toUpperCase());
-          totalCals += f.getCalories();
-          totalProtein += f.getProtein();
-          totalCarbs += f.getCarbs();
-          totalFat += f.getFat();
+          int quantity = currentFoodsListAdapter.getQuantity(i);
+          totalCals += f.getCalories() * quantity;
+          totalProtein += f.getProtein() * quantity;
+          totalCarbs += f.getCarbs() * quantity;
+          totalFat += f.getFat() * quantity;
         }
         cals = totalCals;
         protein = totalProtein;

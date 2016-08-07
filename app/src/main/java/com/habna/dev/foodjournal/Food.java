@@ -57,12 +57,16 @@ public class Food {
     return name + "\n" + getNutrition();
   }
 
-  public String displayString() {
-    return toString();
+  public String displayNutrition() {
+    return measure + ": " + getNutrition();
   }
 
   public String getNutrition()  {
     return calories + " cal  " + protein + " p  " + carbs + " c  " + fat + " f\n";
+  }
+
+  public String getMeasure() {
+    return measure;
   }
 
   public double getProtein() {

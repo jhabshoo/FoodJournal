@@ -16,7 +16,8 @@
             android:layout_width="match_parent"
             android:layout_height="40dp"
             android:hint="Search..."
-            android:imeOptions="flagNoExtractUi|actionSearch"
+            android:inputType="textAutoComplete"
+            android:imeOptions="actionDone"
             android:focusableInTouchMode="true"/>
 
         <ListView
