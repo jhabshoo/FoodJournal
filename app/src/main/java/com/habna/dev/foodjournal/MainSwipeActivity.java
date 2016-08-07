@@ -825,7 +825,7 @@ public class MainSwipeActivity extends AppCompatActivity {
     private String buildDisplayText() {
       StringBuilder stringBuilder = new StringBuilder();
       stringBuilder.append(GOAL);
-      stringBuilder.append(goalCalories);
+      stringBuilder.append(Math.round(goalCalories));
       stringBuilder.append(CALORIES_PER_DAY+"\n");
       stringBuilder.append(Math.round(goalProtein));
       stringBuilder.append(" g protein\n");

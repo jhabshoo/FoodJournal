@@ -16,8 +16,10 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class FoodAutoCompleteAdapter extends BaseAdapter implements Filterable {
 
@@ -87,12 +89,22 @@ public class FoodAutoCompleteAdapter extends BaseAdapter implements Filterable {
    * Returns a search result for the given book title.
    */
   private List<Food> findFoods(String name) {
+    String[] terms = name.split(" ");
     List<Food> results = new ArrayList<>();
     for (Map.Entry<String, Food> entry : MainSwipeActivity.usdaFoodMap.entrySet()) {
-      if (entry.getKey().contains(name.toUpperCase())) {
+      if (validResult(entry.getKey(), terms)) {
         results.add(entry.getValue());
       }
     }
     return results;
+  }
+
+  private boolean validResult(String key, String[] terms) {
+    for (String str : terms)  {
+      if (!key.contains(str.toUpperCase())) {
+        return false;
+      }
+    }
+    return true;
   }
 }
