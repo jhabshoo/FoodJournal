@@ -12,13 +12,9 @@ public class Food {
   private double calories;
   private String measure;
 
-  public Food() {
-
-  }
-
   public Food(String name, double protein, double carbs, double fat, String measure) {
     super();
-    this.name = name;
+    this.name = sanitizeName(name);
     this.protein = protein;
     this.carbs = carbs;
     this.fat = fat;
@@ -28,12 +24,16 @@ public class Food {
 
   public Food(String name, double protein, double carbs, double fat, String measure, double calories) {
     super();
-    this.name = name;
+    this.name = sanitizeName(name);
     this.protein = protein;
     this.carbs = carbs;
     this.fat = fat;
     this.measure = measure;
     this.calories = calories;
+  }
+
+  private String sanitizeName(String name)  {
+    return name.replace("&amp;", "&");
   }
 
   private void calculateCalories()  {
@@ -53,12 +53,7 @@ public class Food {
 
   @Override
   public String toString()  {
-//    return "Food [name=" + name + ",protein=" + protein + ",carbs=" + carbs + ",fat=" + fat + "]";
     return name + "\n" + getNutrition();
-  }
-
-  public String displayNutrition() {
-    return measure + ": " + getNutrition();
   }
 
   public String getNutrition()  {

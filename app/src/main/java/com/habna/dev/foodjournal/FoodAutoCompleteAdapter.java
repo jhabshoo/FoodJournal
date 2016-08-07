@@ -46,7 +46,7 @@ public class FoodAutoCompleteAdapter extends BaseAdapter implements Filterable {
     }
     ((TextView) convertView.findViewById(R.id.searchText1)).setText(getItem(position).getName());
     ((TextView) convertView.findViewById(R.id.searchText2)).setText(getItem(position).getMeasure());
-//    ((TextView) convertView.findViewById(R.id.searchText3)).setText(getItem(position).getNutrition());
+    ((TextView) convertView.findViewById(R.id.searchText3)).setText(getItem(position).getNutrition());
     return convertView;
   }
 

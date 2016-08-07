@@ -13,8 +13,10 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by jhabs on 8/5/2016.
@@ -47,7 +49,7 @@ public class NutritionInfoFetch extends AsyncTask<String, Void, Map<String, Food
       JSONObject jsonObject = new JSONObject(builder.toString());
       JSONArray foods = jsonObject.getJSONObject("report").getJSONArray("foods");
       Map<String, Food> results = new HashMap<>();
-      for (int i = 0; i < 971; i++)  {
+      for (int i = 0; i < foods.length(); i++)  {
         JSONObject foodJson = foods.getJSONObject(i);
         String name = foodJson.getString("name");
         String measure = foodJson.getString("measure");

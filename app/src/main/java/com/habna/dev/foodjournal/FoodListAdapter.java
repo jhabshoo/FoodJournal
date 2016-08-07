@@ -1,13 +1,11 @@
 package com.habna.dev.foodjournal;
 
 import android.content.Context;
-import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
-import android.widget.TwoLineListItem;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -81,25 +79,25 @@ public class FoodListAdapter extends BaseAdapter {
   @Override
   public View getView(int position, View convertView, ViewGroup parent) {
 
-    TwoLineListItem twoLineListItem;
+    View view = convertView;
 
-    if (convertView == null) {
+    if (view == null) {
       LayoutInflater inflater = (LayoutInflater) context
         .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-      twoLineListItem = (TwoLineListItem) inflater.inflate(
-        android.R.layout.simple_list_item_2, null);
-    } else {
-      twoLineListItem = (TwoLineListItem) convertView;
+      view = inflater.inflate(R.layout.simple_dropdown_item_3line, null);
     }
 
-    TextView text1 = twoLineListItem.getText1();
-    TextView text2 = twoLineListItem.getText2();
+    TextView text1 = (TextView) view.findViewById(R.id.searchText1);
+    TextView text2 = (TextView) view.findViewById(R.id.searchText2);
+    TextView text3 = (TextView) view.findViewById(R.id.searchText3);
 
     Food food = foods.get(position);
 
     text1.setText(food.getName());
     text2.setText("" + food.getNutrition());
+    text3.setText("Quantity: " + quantityMap.get(food.getName().toUpperCase()));
 
-    return twoLineListItem;
+
+    return view;
   }
 }
