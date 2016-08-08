@@ -62,6 +62,11 @@ public class FoodListAdapter extends BaseAdapter {
     return quantityMap.get(foods.get(position).getName().toUpperCase());
   }
 
+  public void setQuantity(int position, int newValue) {
+    quantityMap.put(foods.get(position).getName().toUpperCase(), newValue);
+    notifyDataSetChanged();
+  }
+
   public void removeFood(int position, int quantity)  {
     int baseQuantity = quantityMap.get(foods.get(position).getName().toUpperCase());
     if (baseQuantity == quantity) {
@@ -96,7 +101,6 @@ public class FoodListAdapter extends BaseAdapter {
     text1.setText(food.getName());
     text2.setText("" + food.getNutrition());
     text3.setText("Quantity: " + quantityMap.get(food.getName().toUpperCase()));
-
 
     return view;
   }

@@ -208,77 +208,52 @@ public class MainSwipeActivity extends AppCompatActivity {
       currentFoodsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+          final Context context = getActivity();
           final int position = i;
           String key = ((Food)currentFoodsListAdapter.getItem(i)).getName().toUpperCase();
           Food food = allFoods.get(key);
           if (food != null) {
-            final Context context = getActivity();
-            TextView measure = new TextView(context);
-            measure.setText(food.getMeasure());
-            TextView protein = new TextView(context);
-            protein.setText(food.getProteinDisplay());
-            TextView carbs = new TextView(context);
-            carbs.setText(food.getCarbsDisplay());
-            TextView fat = new TextView(context);
-            fat.setText(food.getFatDisplay());
-            TextView calories = new TextView(context);
-            calories.setText(food.getCalsDisplay());
-            final TextView quantity = new TextView(context);
-            quantity.setText("Quantity: " + currentFoodsListAdapter.getQuantity(i).toString());
+            LayoutInflater layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            View layout = layoutInflater.inflate(R.layout.current_food_list_item_popup, null);
 
-            LinearLayout layout = new LinearLayout(context);
-            layout.setOrientation(LinearLayout.VERTICAL);
-            layout.addView(measure);
-            layout.addView(protein);
-            layout.addView(carbs);
-            layout.addView(fat);
-            layout.addView(calories);
-            layout.addView(quantity);
+            TextView currentFoodName = (TextView) layout.findViewById(R.id.currentFoodName);
+            TextView currentFoodMeasure = (TextView) layout.findViewById(R.id.currentFoodMeasure);
+            TextView currentFoodProtein = (TextView) layout.findViewById(R.id.currentFoodProtein);
+            TextView currentFoodCarbs = (TextView) layout.findViewById(R.id.currentFoodCarbs);
+            TextView currentFoodFat = (TextView) layout.findViewById(R.id.currentFoodFat);
+            currentFoodName.setText(food.getName());
+            currentFoodMeasure.setText(food.getMeasure());
+            currentFoodProtein.setText(food.getProteinDisplay());
+            currentFoodCarbs.setText(food.getCarbsDisplay());
+            currentFoodFat.setText(food.getFatDisplay());
+
+            final EditText currentQuantityText = (EditText) layout.findViewById(R.id.currentFoodQuantity);
+            final int currentQuantity = currentFoodsListAdapter.getQuantity(position);
+            currentQuantityText.setText(String.valueOf(currentQuantity));
 
             final AlertDialog.Builder builder = new AlertDialog.Builder(context);
-            builder.setTitle(food.getNameAndMeasure());
+            builder.setTitle(food.getName());
             builder.setView(layout);
             builder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
               @Override
-              public void onClick(DialogInterface dialogInterface, int i) {}
+              public void onClick(DialogInterface dialogInterface, int i) {
+                try {
+                  int newQuantity = Integer.valueOf(currentQuantityText.getText().toString());
+                  if (newQuantity > 0 && newQuantity != currentQuantity) {
+                    currentFoodsListAdapter.setQuantity(position, newQuantity);
+                    recalculateTotals();
+                  } else if (newQuantity == 0)  {
+                    currentFoodsListAdapter.removeFood(position, currentQuantity);
+                    recalculateTotals();
+                  }
+                } catch (NumberFormatException nfe) {
+
+                }
+              }
             });
-            builder.setNegativeButton("Remove", new DialogInterface.OnClickListener() {
+            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
               @Override
               public void onClick(DialogInterface dialogInterface, int i) {
-                if (currentFoodsListAdapter.getQuantity(position) > 1) {
-                  final EditText quantityText = new EditText(context);
-                  quantityText.setHint("# to remove");
-                  quantityText.setInputType(InputType.TYPE_NUMBER_FLAG_DECIMAL);
-                  LinearLayout linearLayout = new LinearLayout(context);
-                  linearLayout.addView(quantityText);
-
-                  final AlertDialog.Builder quantityBuilder = new AlertDialog.Builder(context);
-                  quantityBuilder.setTitle("Remove item");
-                  quantityBuilder.setView(linearLayout);
-                  quantityBuilder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int pos) {
-                      try {
-                        int quantity = Integer.valueOf(quantityText.getText().toString());
-                        currentFoodsListAdapter.removeFood(position, quantity);
-                        recalculateTotals();
-                      } catch (NumberFormatException nfe) {
-
-                      }
-                    }
-                  });
-                  quantityBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-
-                    }
-                  });
-                  quantityBuilder.show();
-                } else  {
-                  currentFoodsListAdapter.remove(position);
-                  currentFoodsListAdapter.notifyDataSetChanged();
-                  recalculateTotals();
-                }
               }
             });
             builder.show();
@@ -380,7 +355,6 @@ public class MainSwipeActivity extends AppCompatActivity {
         @Override
         public void onClick(View view) {
           Context context = getActivity();
-
           // input
           final EditText name = new EditText(context);
           name.setHint("Name");
