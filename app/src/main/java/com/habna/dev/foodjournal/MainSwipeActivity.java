@@ -420,6 +420,7 @@ public class MainSwipeActivity extends AppCompatActivity {
                 Food food = new Food(nameText, Double.valueOf(proteinText),
                   Double.valueOf(carbsText), Double.valueOf(fatText), measureText);
                 addToAllFoods(food);
+                saveAllFoods();
                 currentFoodsListAdapter.addFood(food);
                 recalculateTotals();
                 Toast.makeText(getActivity(), "Added " + nameText, Toast.LENGTH_SHORT).show();
