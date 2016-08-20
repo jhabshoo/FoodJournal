@@ -840,7 +840,7 @@ public class MainSwipeActivity extends AppCompatActivity {
               saveGoals();
             }
           }catch (NumberFormatException nfe)  {
-
+            
           }
         }
       });

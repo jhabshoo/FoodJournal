@@ -9,13 +9,13 @@
                   android:orientation="horizontal"
                   android:layout_width="205dp"
                   android:layout_height="match_parent"
-                  android:layout_weight="0.57">
+                  android:layout_weight="0.91">
 
         <com.habna.dev.foodjournal.DelayAutoCompleteTextView
             android:id="@+id/searchTextView"
             android:layout_width="match_parent"
             android:layout_height="40dp"
-            android:hint="Search..."
+            android:hint="@string/search_hint"
             android:inputType="textAutoComplete"
             android:imeOptions="actionDone"
             android:focusableInTouchMode="true"/>
@@ -24,7 +24,9 @@
             android:id="@+id/currentFoodsListView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_below="@id/searchTextView"/>
+            android:layout_below="@id/searchTextView"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"/>
 
     </RelativeLayout>
     <RelativeLayout
@@ -43,7 +45,7 @@
         <Button
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Add custom food"
+            android:text="@string/add_custom_food_hint"
             android:id="@+id/addCustomFoodButton"
             android:layout_alignParentBottom="true"
             android:layout_alignParentRight="true"
@@ -53,21 +55,33 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/totalCaloriesTextView"
-            android:text="total"
+            android:id="@+id/totalGoalsHeader"
             android:layout_below="@+id/pb_loading_indicator"
-            android:layout_marginTop="28dp"
+            android:text="Daily Nutrition"
+            android:textStyle="bold"
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true"
             android:layout_toRightOf="@+id/pb_loading_indicator"
-            android:layout_toEndOf="@+id/pb_loading_indicator"/>
+            android:layout_toEndOf="@+id/pb_loading_indicator"
+            android:paddingTop="25dp"
+            android:paddingLeft="25dp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/totalCaloriesTextView"
+            android:text="@string/total_hint"
+            android:textSize="12sp"
+            android:layout_below="@+id/totalGoalsHeader"
+            android:layout_marginTop="25dp"/>
 
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/goalCaloriesTextView"
-            android:text="goal"
+            android:text="@string/goal_hint"
+            android:textSize="12sp"
             android:layout_below="@+id/totalCaloriesTextView"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"/>
@@ -76,7 +90,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/totalProteinTextView"
-            android:text="total"
+            android:text="@string/total_hint"
+            android:textSize="12sp"
             android:layout_marginTop="28dp"
             android:layout_below="@+id/goalCaloriesTextView"
             android:layout_alignParentLeft="true"
@@ -87,7 +102,8 @@
             android:layout_height="wrap_content"
             android:id="@+id/goalProteinTextView"
             android:layout_gravity="bottom"
-            android:text="goal"
+            android:text="@string/goal_hint"
+            android:textSize="12sp"
             android:layout_below="@+id/totalProteinTextView"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"/>
@@ -96,7 +112,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/totalCarbsTextView"
-            android:text="total"
+            android:text="@string/total_hint"
+            android:textSize="12sp"
             android:layout_gravity="bottom"
             android:layout_below="@+id/goalProteinTextView"
             android:layout_alignParentLeft="true"
@@ -108,7 +125,8 @@
             android:layout_height="wrap_content"
             android:id="@+id/goalCarbsTextView"
             android:layout_gravity="bottom"
-            android:text="goal"
+            android:text="@string/goal_hint"
+            android:textSize="12sp"
             android:layout_below="@+id/totalCarbsTextView"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"/>
@@ -117,7 +135,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/totalFatTextView"
-            android:text="total"
+            android:text="@string/total_hint"
+            android:textSize="12sp"
             android:layout_gravity="bottom"
             android:layout_below="@+id/goalCarbsTextView"
             android:layout_alignParentLeft="true"
@@ -128,7 +147,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/goalFatTextView"
-            android:text="goal"
+            android:text="@string/goal_hint"
+            android:textSize="12sp"
             android:layout_gravity="bottom"
             android:layout_below="@+id/totalFatTextView"
             android:layout_alignParentLeft="true"
@@ -137,7 +157,7 @@
         <Button
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Set Goal"
+            android:text="@string/set_goal_hint"
             android:id="@+id/goalButton"
             android:layout_above="@+id/addCustomFoodButton"
             android:layout_alignParentRight="true"

@@ -9,6 +9,13 @@
     <string name="title_activity_main_swipe">FoodJournal</string>
     <string name="action_settings">Settings</string>
 
+    <!-- Journal Fragment layout strings -->
+    <string name="search_hint">Search...</string>
+    <string name="add_custom_food_hint">Add custom food</string>
+    <string name="total_hint">total</string>
+    <string name="goal_hint">goal</string>
+    <string name="set_goal_hint">Set Goal</string>
+
     <string-array name="sexes">
         <item>Dude</item>
         <item>Lady</item>
